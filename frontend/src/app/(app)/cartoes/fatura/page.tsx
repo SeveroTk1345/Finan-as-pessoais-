@@ -110,7 +110,9 @@ function Detail({ id, due }: { id: string; due: string }) {
       <PageHeader title={<>Fatura de <DateText iso={i.due_date} /></>}
         subtitle={<>Fecha <DateText iso={i.closing_date} /> · vence <DateText iso={i.due_date} /></>} />
       <div className="card stack">
-        <Situation value={i.status} />
+        {(i.status === "aberta" || i.status === "futura") && i.total_cents > 0 && i.remaining_cents === 0 ? (
+          <p><Situation value="paga" /> <span className="small muted">Paga antes do fechamento. Novas compras até o fechamento ainda entram nesta fatura.</span></p>
+        ) : <Situation value={i.status} />}
         <div className="grid-2">
           <Stat size="md" label="Total da fatura" cents={i.total_cents} />
           <Stat size="md" label="Falta pagar" cents={i.remaining_cents} />

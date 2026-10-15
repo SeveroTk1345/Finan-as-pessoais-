@@ -2,35 +2,44 @@
 
 Atualizado em 15/10/2026.
 
-**Estado geral:** base técnica pronta. O app ainda não tem login, banco, telas financeiras nem publicação. **Não está disponível na internet.**
+**Estado geral:** aplicação completa e testada em ambiente local. **Não publicada na internet** (depende de conta em provedor de nuvem, ver `IMPLANTACAO.md`).
 
 ## Implementado e testado
 
-| Item | Onde | Testes |
+| Área | O que existe | Testes |
 |---|---|---|
-| Tipo `Money` em centavos, rejeita `float` e `bool`, limite de 1 trilhão de reais (abaixo do inteiro exato do JavaScript) | `backend/app/domain/money.py` | `tests/domain/test_money.py` |
-| Leitura de valores no formato BR (`1.234,56`, `R$ 1.234,56`, espaço não separável), rejeição de formatos ambíguos | idem | idem, com teste de propriedade (formatar e ler de volta) |
-| Divisão em parcelas sem perder centavos | idem | Teste de propriedade: soma = total para qualquer valor e 1 a 48 parcelas |
-| Arredondamento com modo explícito (sem padrão até decisão A7) | idem | idem |
-| Datas civis: dias do mês, limite de dia, soma de meses, mês de referência, leitura e formatação DD/MM/AAAA | `backend/app/domain/dates.py` | `tests/domain/test_dates.py` |
-| Recorrência mensal a partir da data original (sem deslizar o dia 31) | idem | Teste de propriedade em 2000 a 2100 |
-| Relógio injetável e "hoje" em America/Sao_Paulo, incluindo horário de verão histórico | `backend/app/core/clock.py` | `tests/core/test_clock.py` |
-| Proibição de `float` e divisão `/` no domínio | `tests/domain/test_no_float.py` | Teste que analisa o código |
-| API com `GET /api/health`; documentação desligada em produção | `backend/app/main.py`, `app/api/health.py` | `tests/api/test_health.py` e teste com servidor real |
-| Formatação de reais e datas no frontend, sem `Date` | `frontend/src/lib/format.ts` | `format.test.ts` em 3 fusos |
-| Máscara de valor estilo app de banco (dígitos entram pela direita) | idem | idem |
-| Lint que proíbe `new Date(texto)`, `Date.parse` e `parseFloat` | `frontend/eslint.config.mjs` | Verificado com arquivo de prova |
-| Base visual: fonte 18 px, botões 48 px, foco visível, áreas seguras do iPhone, zoom permitido | `frontend/src/app/globals.css`, `layout.tsx` | Build; validação visual no iPhone ainda não feita |
+| Base | Dinheiro em centavos, datas civis, recorrência sem deslizar, relógio de São Paulo | Domínio (unitários e propriedades) |
+| Banco | PostgreSQL 16, 3 migrações, 20 tabelas, RLS forçada, chaves compostas, papéis separados | Convenções no catálogo, migração ida e volta, mutação |
+| Isolamento | Filtro na aplicação + RLS; identidade por transação; limpeza no pool | 3 usuários, 6 combinações de acesso cruzado em todas as rotas, pool de 1 conexão, concorrência |
+| Autenticação | Login, sair, trocar senha, expiração, limite de tentativas, CSRF, cabeçalhos de segurança, linha de comando de usuários | API e linha de comando |
+| Idempotência | Chave por operação em todas as criações | Reenvio, envios simultâneos, resposta perdida (API e navegador) |
+| Contas e lançamentos | Contas, saldos, ajuste com histórico, categorias, receitas, despesas, reembolsos, transferências, edição com histórico, cancelamento | API + ponta a ponta |
+| Contas a pagar | Avulsas e recorrentes, a receber, pagamento parcial, vencidas que permanecem, lista unificada com faturas e parcelas | API + ponta a ponta |
+| Cartões | Compras à vista/parceladas, encargos, faturas derivadas, pagamento integral/parcial, limite, estorno, cancelamento, renegociação de fatura | Domínio + API (regressão contra dupla contagem) + ponta a ponta |
+| Dívidas | Saldo ancorado, pagamentos com/sem juros, encargos, quitação, renegociação, entrada de empréstimo, 4 estratégias | Domínio + API + ponta a ponta |
+| Investimentos | Renda fixa, variável e outros, aportes, retiradas, rendimentos, preço médio, valores informados, ganho estimado, TIR | Domínio + API + ponta a ponta |
+| Metas | Contribuições, progresso, projeção com premissas | Domínio + API + ponta a ponta |
+| Início e relatórios | Resumo com definições explicadas, relatório mensal, evolução de 12 meses | API + ponta a ponta |
+| Exportação | JSON completo e CSV de lançamentos, só do próprio usuário | API |
+| Interface | 33 telas, preto e branco, acessível, celular e computador | Ponta a ponta (16 testes), tela pequena, rótulos |
+| PWA | Manifesto, ícones iOS, service worker só da estrutura, aviso de versão | Build; uso offline nos testes ponta a ponta |
+| Backup | Diário com rotação, SHA-256, restauração em banco novo | 12 testes + Compose real + restauração dos dados da interface |
+| Implantação | Dockerfile, Compose com Caddy (HTTPS), migração separada, guia | Compose de produção local por HTTPS |
 
 ## Pendente
-Ver `PLANO.md` (tarefas) e `DECISOES.md` (decisões em aberto).
+| Item | Motivo |
+|---|---|
+| Publicação na nuvem | Exige conta do Diogo no provedor (H1) |
+| Cópia de backup fora do servidor e cifrada | Destino a decidir (D9) |
+| Validação no iPhone físico | Exige publicação; roteiro pronto em `VALIDACAO_IPHONE.md` |
+| Teste com usuários representativos | Não é possível neste ambiente (`ACESSIBILIDADE.md`) |
+| Importação de CSV de extratos | Não implementada nesta versão (prevista na especificação original, item 4.11) |
+| Simulador "Posso comprar?" | Não implementado nesta versão (especificação original, item 4.9); o Início mostra o dinheiro livre |
+| Revisão independente pelo Codex | Repositório disponível para isso |
 
 ## Limitações conhecidas
-* Página inicial provisória, sem dados.
-* Não há Docker ainda (entra na T1.2 com o PostgreSQL).
-* `make` não existe por padrão no Windows; os comandos estão listados no `Makefile` para uso manual.
-* A regra de lint de datas pega `new Date(x)` com um argumento; `new Date(ano, mes, dia)` continua permitido, porque não tem o problema de UTC.
-
-## GitHub
-* Repositório em uso: `SeveroTk1345/Finan-as-pessoais-` (público). Envio funcionando.
-* Pendência G1: renomear para `financas-pessoais` e tornar privado.
+* Sem conexão, o app não salva (por decisão: não há fila de envio offline).
+* Valores de investimentos dependem de atualização manual.
+* Pagamento parcial de fatura: juros do rotativo são lançados pela pessoa na fatura seguinte (F-CARTAO-5).
+* Ajuste de vencimento para dia útil não é feito (F-CARTAO-3).
+* A CSP permite scripts inline (exigência do site estático do Next.js).

@@ -129,7 +129,11 @@ function Detail({ id }: { id: string }) {
                 <span className="main">
                   <span className="title">Vence <DateText iso={i.due_date} /></span>
                   <span className="sub">Fecha <DateText iso={i.closing_date} /></span>
-                  <span style={{ marginTop: 4 }}><Situation value={i.status} /></span>
+                  <span className="row" style={{ marginTop: 4, gap: 6 }}>
+                    {(i.status === "aberta" || i.status === "futura") && i.total_cents > 0 && i.remaining_cents === 0 ? (
+                      <><Situation value="paga" /><span className="small muted">antecipada</span></>
+                    ) : <Situation value={i.status} />}
+                  </span>
                 </span>
                 <span style={{ textAlign: "right" }}>
                   <Money cents={i.total_cents} className="amount" />

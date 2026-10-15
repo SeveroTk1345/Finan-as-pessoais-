@@ -1,6 +1,6 @@
 # Decisões
 
-Versão 3, de 15/10/2026. A versão anterior está no histórico do Git. As mudanças de escopo que motivaram cada alteração estão em `MUDANCAS_DE_ESCOPO.md`.
+Versão 4, de 15/10/2026 (inclui decisões tomadas durante a implementação). A versão anterior está no histórico do Git. As mudanças de escopo que motivaram cada alteração estão em `MUDANCAS_DE_ESCOPO.md`.
 
 Origem: **Diogo** (decidido pelo dono do projeto) · **M3** (decidido pelo Claude com a autonomia dada na missão M3, pela alternativa mais segura) · **Técnica**.
 
@@ -46,6 +46,12 @@ Qualquer decisão M3 pode ser revista pelo Diogo. Mudar uma decisão financeira 
 | F14 | Transferência gera dois lançamentos ligados (saída e entrada) e fica fora de receitas e despesas | Requisito |
 | F15 | Entrada de empréstimo e reembolso não são receita; resgate de investimento não é receita; aporte não é despesa | M3 |
 | F16 (D8) | Compras em moeda estrangeira registradas em reais pelo valor cobrado; IOF como encargo do cartão | M3 |
+| F17 | O saldo inicial vale para o começo do dia informado; lançamentos com data anterior são recusados | M3 (implementação) |
+| F18 | Lançamentos realizados (receita, despesa, pagamento, compra, aporte) não aceitam data futura; o que vai acontecer fica em Contas a pagar | M3 (implementação) |
+| F19 | Pagamento de fatura, conta a pagar ou dívida acima do que falta é recusado, com o valor restante na mensagem | M3 (implementação) |
+| F20 | Pagamentos de fatura e de dívida não são editados: cancela-se e registra-se de novo, para as validações valerem outra vez | M3 (implementação) |
+| F21 | Ao abrir uma ocorrência de recorrência para pagar, ela é gravada (sem pagamento). Isso não muda saldos nem totais | M3 (implementação) |
+| F22 | "Gastei no mês" conta compras no cartão pela data da compra; compra cancelada sai do gasto; estorno reduz a categoria no mês do estorno; no parcelamento de fatura, só os juros entram como gasto | M3 (implementação) |
 
 ### Cartões
 | ID | Decisão | Origem |

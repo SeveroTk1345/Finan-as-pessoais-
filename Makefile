@@ -1,4 +1,5 @@
 # Comandos do projeto. Requer: uv (Python) e Node.js 22+.
+PHONY_EXTRA := e2e imagem
 .PHONY: install test test-backend test-backend-sem-banco test-frontend lint lint-backend lint-frontend build dev-backend dev-frontend db-up db-down migrate backup-agora
 
 install:
@@ -48,3 +49,11 @@ migrate:
 
 backup-agora:
 	cd deploy && docker compose exec backup /scripts/backup.sh
+
+# Testes ponta a ponta (Playwright, perfil iPhone) + backup/restauração (requer Docker).
+e2e:
+	scripts/e2e.sh
+
+# Imagem de produção.
+imagem:
+	docker build -t financas:latest .

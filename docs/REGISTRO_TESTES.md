@@ -63,3 +63,57 @@ Testes novos (todos contra PostgreSQL real):
 4. Serviço `backup` criou uma cópia ao subir e outra com `docker compose exec backup /scripts/backup.sh`; arquivos com permissão 600 e `.sha256`.
 5. `restore.sh` restaurou em `fin_restaurado`, com RLS ativa em `users` e `accounts`.
 6. `docker compose down -v`: ambiente removido.
+
+## T1.3 a T6 · Aplicação completa · 15/10/2026
+
+Ambiente: container Linux desta sessão; PostgreSQL 16.10 em Docker; Python 3.13; Node.js 22.22; Chromium 1194 com perfil de iPhone (Playwright 1.56.1). **Não é o Safari real.**
+
+| Verificação | Resultado |
+|---|---|
+| `pytest` (backend, banco real) | **351 aprovados**, 0 falhas |
+| `ruff check`, `ruff format --check`, `mypy --strict` | Sem problemas (72 arquivos) |
+| `vitest` (frontend) em 3 fusos | **41 aprovados** em cada fuso |
+| `eslint --max-warnings=0`, `tsc --noEmit` | Sem problemas |
+| `next build` (export estático) | 33 telas geradas |
+| Playwright (`scripts/e2e.sh`) | **16 aprovados**, 0 falhas |
+| Backup + restauração dos dados criados pela interface (cenário 14) | Conteúdo idêntico (contas, lançamentos com soma, parcelas, dívidas, investimentos, metas, usuários) |
+| `pip-audit` | Nenhuma vulnerabilidade conhecida |
+| `npm audit --omit=dev` | 0 vulnerabilidades |
+| `docker build` da imagem de produção | Construída |
+| `docker compose up` de produção com `FIN_DOMAIN=localhost` | HTTPS/HTTP2, HSTS, CSP, cookie Secure/HttpOnly/SameSite=Strict, CSRF 403 de outra origem, docs desligadas, só 80/443 publicadas, dados e sessão mantidos após `down` + `up` |
+
+### Cenários obrigatórios (missão, seção 11)
+| # | Cenário | Onde | Resultado |
+|---|---|---|---|
+| 1 | Conta + receita | `e2e/fluxos.spec.ts` | Aprovado (saldo R$ 4.500,00) |
+| 2 | Despesa e saldo | idem | Aprovado |
+| 3 | Transferência entre contas | idem | Aprovado (receita do mês inalterada) |
+| 4 | Compra parcelada no cartão | idem | Aprovado (limite usado R$ 1.200,00) |
+| 5 | Pagar fatura sem duplicar despesa | idem | Aprovado (gasto do mês sem o pagamento) |
+| 6 | Pagamento parcial de dívida | idem | Aprovado |
+| 7 | Investimento + aporte | idem | Aprovado (aporte não é gasto) |
+| 8 | Atualização manual do saldo | idem | Aprovado (ganho +R$ 50,00) |
+| 9 | Relatórios e metas | idem | Aprovado |
+| 10 | Acesso a dados de outra pessoa | idem + testes de API | Aprovado (404 pela API e pela tela) |
+| 11 | Recarregar e dados salvos | idem | Aprovado |
+| 12 | Tela pequena | `e2e/telas.spec.ts` (iPhone SE) | Aprovado (sem rolagem lateral, alvos ≥ 44 px, texto 18 px) |
+| 13 | Sem internet | `e2e/fluxos.spec.ts` | Aprovado (aviso, botão bloqueado, resposta perdida sem duplicar) |
+| 14 | Restaurar backup em ambiente separado | `scripts/e2e-backup-check.sh` e `tests/db/test_backup_restore.py` | Aprovado |
+
+### Defeitos encontrados pelos testes e corrigidos
+1. Simulação de dívidas estourava a precisão quando os juros superam a parcela: agora interrompe e avisa.
+2. Saldo e somas saíam como texto (`numeric` do PostgreSQL): conversão explícita para inteiro e teste que varre todas as respostas.
+3. Conta de outra pessoa em movimento de investimento: o banco recusava (chave composta), mas a API respondia 500; agora valida antes e qualquer violação de integridade vira 422.
+4. Saldo do início do mês ignorava contas abertas no dia 1º.
+5. Cancelamento depois de estorno parcial creditava em dobro (achado por teste de mutação).
+6. O site não aceitava `HEAD`, usado pelo Next.js para pré-carregar páginas.
+7. Na primeira visita, o service worker recarregava a página e apagava o que fora digitado.
+8. Depois de falha de rede, o botão "Salvar" ficava bloqueado até 30 s; agora reverifica a cada 3 s.
+9. Mensagem "Conta não encontrado" (concordância).
+10. Fatura aberta já paga aparecia só como "Aberta"; agora mostra "Paga".
+
+### Não testado
+* Safari real, instalação na Tela de Início e VoiceOver no iPhone (roteiro em `VALIDACAO_IPHONE.md`).
+* Teste com usuários reais (ver `ACESSIBILIDADE.md`).
+* Publicação em provedor de nuvem e certificado Let's Encrypt real.
+* Integração contínua no GitHub (o arquivo existe; a execução depende do GitHub).

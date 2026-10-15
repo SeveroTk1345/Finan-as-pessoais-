@@ -1,0 +1,11 @@
+# HTTPS automático (Let's Encrypt) para o domínio em FIN_DOMAIN.
+# Com FIN_DOMAIN=localhost, o Caddy usa um certificado local (só para testes).
+{$FIN_DOMAIN} {
+	encode zstd gzip
+	# O Caddy substitui X-Forwarded-For pelo IP real (o cliente não consegue forjar).
+	reverse_proxy app:8000
+	log {
+		output stdout
+		format console
+	}
+}

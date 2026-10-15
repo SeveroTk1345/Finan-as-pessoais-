@@ -1,10 +1,9 @@
-# Banco de dados e backup automático.
-# A API e o proxy HTTPS entram nas tarefas T1.3 a T1.6.
+# Aplicação completa: banco, migrações, API + site, HTTPS (Caddy) e backup automático.
 #
-# Uso local:  cd deploy && cp ../.env.example .env  (ajuste as senhas)
-#             docker compose up -d
-# O banco NÃO publica porta. Para acessar do computador em desenvolvimento, use o
-# arquivo docker-compose.dev.yml, que publica só em 127.0.0.1.
+#   cd deploy && cp ../.env.example .env   # e troque TODAS as senhas e o domínio
+#   docker compose up -d --build
+#
+# Só o Caddy publica portas (80 e 443). Banco e API ficam na rede interna.
 
 name: financas
 
@@ -28,6 +27,46 @@ services:
       retries: 10
     networks: [interno]
 
+  # Aplica as migrações e termina. A API nunca recebe a senha de administrador.
+  migrate:
+    build: ..
+    image: financas:latest
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      FIN_DATABASE_ADMIN_URL: postgresql+psycopg://fin_admin:${FIN_DB_ADMIN_PASSWORD}@db:5432/financas
+    command: ["alembic", "upgrade", "head"]
+    networks: [interno]
+
+  app:
+    image: financas:latest
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      FIN_ENVIRONMENT: production
+      FIN_DATABASE_URL: postgresql+psycopg://fin_app:${FIN_DB_APP_PASSWORD}@db:5432/financas
+      FIN_ALLOWED_ORIGINS: https://${FIN_DOMAIN:?defina FIN_DOMAIN no .env}
+    networks: [interno]
+
+  caddy:
+    image: caddy:2.10.2-alpine
+    restart: unless-stopped
+    depends_on: [app]
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      FIN_DOMAIN: ${FIN_DOMAIN:?defina FIN_DOMAIN no .env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    networks: [interno]
+
   backup:
     image: postgres:16.10-alpine
     restart: unless-stopped
@@ -37,7 +76,7 @@ services:
     environment:
       PGHOST: db
       PGUSER: fin_admin
-      PGPASSWORD: ${FIN_DB_ADMIN_PASSWORD:?defina FIN_DB_ADMIN_PASSWORD no .env}
+      PGPASSWORD: ${FIN_DB_ADMIN_PASSWORD}
       PGDATABASE: financas
       FIN_BACKUP_DIR: /backups
       FIN_BACKUP_KEEP: ${FIN_BACKUP_KEEP:-14}
@@ -45,7 +84,6 @@ services:
     volumes:
       - ../scripts:/scripts:ro
       - ${FIN_BACKUP_HOST_DIR:-./backups}:/backups
-    # Um backup ao subir e depois a cada intervalo. Falha aparece no log e o laço continua.
     entrypoint:
       - /bin/sh
       - -c
@@ -58,6 +96,8 @@ services:
 
 volumes:
   db-data:
+  caddy-data:
+  caddy-config:
 
 networks:
   interno:
