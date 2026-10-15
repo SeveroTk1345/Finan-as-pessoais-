@@ -1,0 +1,63 @@
+# Banco de dados e backup automático.
+# A API e o proxy HTTPS entram nas tarefas T1.3 a T1.6.
+#
+# Uso local:  cd deploy && cp ../.env.example .env  (ajuste as senhas)
+#             docker compose up -d
+# O banco NÃO publica porta. Para acessar do computador em desenvolvimento, use o
+# arquivo docker-compose.dev.yml, que publica só em 127.0.0.1.
+
+name: financas
+
+services:
+  db:
+    image: postgres:16.10-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: fin_admin
+      POSTGRES_PASSWORD: ${FIN_DB_ADMIN_PASSWORD:?defina FIN_DB_ADMIN_PASSWORD no .env}
+      POSTGRES_DB: financas
+      FIN_DB_APP_PASSWORD: ${FIN_DB_APP_PASSWORD:?defina FIN_DB_APP_PASSWORD no .env}
+      TZ: UTC
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fin_admin -d financas -h 127.0.0.1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [interno]
+
+  backup:
+    image: postgres:16.10-alpine
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGHOST: db
+      PGUSER: fin_admin
+      PGPASSWORD: ${FIN_DB_ADMIN_PASSWORD:?defina FIN_DB_ADMIN_PASSWORD no .env}
+      PGDATABASE: financas
+      FIN_BACKUP_DIR: /backups
+      FIN_BACKUP_KEEP: ${FIN_BACKUP_KEEP:-14}
+      FIN_BACKUP_INTERVAL_SECONDS: ${FIN_BACKUP_INTERVAL_SECONDS:-86400}
+    volumes:
+      - ../scripts:/scripts:ro
+      - ${FIN_BACKUP_HOST_DIR:-./backups}:/backups
+    # Um backup ao subir e depois a cada intervalo. Falha aparece no log e o laço continua.
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        while true; do
+          /scripts/backup.sh || echo "ERRO: backup falhou em $$(date -u)" >&2
+          sleep "$$FIN_BACKUP_INTERVAL_SECONDS"
+        done
+    networks: [interno]
+
+volumes:
+  db-data:
+
+networks:
+  interno:

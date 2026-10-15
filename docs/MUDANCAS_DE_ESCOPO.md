@@ -44,3 +44,23 @@ Resumo dos requisitos novos:
 | C10 | Requisitos 4.4: lembretes | Notificações não podem mostrar valores | V1: só destaques dentro do app. Notificações push ficam para depois e, se existirem, sem valores |
 
 Nenhuma regra financeira aprovada foi alterada por M2.
+
+## M3 · Missão de desenvolvimento completo (15/10/2026)
+
+Origem: mensagem "MISSÃO: DESENVOLVER O APLICATIVO FINANCEIRO COMPLETO" do Diogo.
+
+Principais pontos:
+* Autonomia para decisões técnicas e para regras financeiras ambíguas, escolhendo a alternativa mais segura e documentando. As decisões antes "abertas" foram tomadas com base nas recomendações da revisão e estão registradas em `DECISOES.md` com a marca **M3**.
+* Identidade visual preto e branco, minimalista, fonte Inter, valores grandes.
+* Áreas: Início, Contas, Receitas e despesas, Contas a pagar, Dívidas e parcelas, Investimentos, Planejamento, Mais (com cartões, relatórios, categorias, perfil, exportação, ajuda).
+* Investimentos com renda fixa, renda variável, outros, movimentações e rentabilidade (TIR/XIRR quando houver dados).
+* Cartões com regras rigorosas e renegociação de fatura transferindo a obrigação para a estrutura de dívida sem duplicar saldo.
+* Testes ponta a ponta com 14 cenários obrigatórios.
+* O repositório pode continuar público (resolve G1).
+
+### Conflitos com decisões anteriores
+| # | Antes | Agora | Como fica |
+|---|---|---|---|
+| C11 | M2: no máximo seis áreas na navegação | M3: oito áreas sugeridas | Computador: barra lateral com as oito áreas. Celular: barra inferior com cinco itens (Início, Lançamentos, A pagar, Investimentos, Mais); as demais ficam em "Mais" com botões grandes e rótulos. Assim o celular respeita o limite de M2 |
+| C12 | Revisão 2.1: parcelamento de fatura como lançamento do próprio cartão, com a dívida só para consulta | M3 item 5.8: transferir a obrigação para a estrutura de dívida | As duas coisas: a renegociação cria uma **dívida** (visível e acompanhada no módulo de dívidas) e a fatura recebe o crédito do valor renegociado. As parcelas do acordo são cobradas nas faturas futuras do cartão, que é como os bancos fazem, e a dívida mostra quanto falta a partir dessas parcelas. Não existe pagamento direto da dívida nesse caso, então nada é contado duas vezes. Ver F-CARTAO-6 |
+| C13 | P2: restauração individual | M3: exportação dos próprios dados | Exportação individual (JSON e CSV). Restauração só do banco inteiro, pelo administrador. Ver P2 |

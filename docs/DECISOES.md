@@ -1,152 +1,109 @@
 # Decisões
 
-Atualizado em 15/10/2026, depois da T1.1.
+Versão 3, de 15/10/2026. A versão anterior está no histórico do Git. As mudanças de escopo que motivaram cada alteração estão em `MUDANCAS_DE_ESCOPO.md`.
 
-Legenda de situação: **Aberta** (depende do Diogo) · **Proposta técnica** (posso decidir, mas está registrada para revisão do Codex) · **Tomada**.
+Origem: **Diogo** (decidido pelo dono do projeto) · **M3** (decidido pelo Claude com a autonomia dada na missão M3, pela alternativa mais segura) · **Técnica**.
 
-Regra: nenhuma decisão aberta é tratada como tomada no código. Funcionalidades bloqueadas não serão implementadas de forma definitiva antes da resposta.
+Qualquer decisão M3 pode ser revista pelo Diogo. Mudar uma decisão financeira exige ajustar os testes correspondentes.
 
-## Resumo
+## 1. Definições financeiras (como cada número é calculado)
 
-| ID | Tema | Situação | Bloqueia |
-|---|---|---|---|
-| H1 | Hospedagem em nuvem gratuita | Aberta | T1.6 (publicação) |
-| G1 | Nome e visibilidade do repositório | Aberta | Nada técnico |
-| P1 | Cache de dados no aparelho | Aberta | T1.5 |
-| P2 | Backups individuais | Aberta | T1.2 (parte individual), T5.1 |
-| P3 | Transparência sobre acesso do administrador do servidor | Aberta | Uso real pelas três pessoas |
-| D10 | Prazos de sessão | Aberta (parcial) | T1.3 (valores, não a estrutura) |
-| A1 | Compra no dia do fechamento | Aberta | T3.1 |
-| A2 | Dia inexistente e fim de semana | Aberta | T3.1, T3.2 |
-| A3 | Regime de caixa ou competência | Aberta | T4.1 |
-| A4 | Parcelamento de fatura | Aberta | T3.3 |
-| A5 / D7 | Pagamento parcial e rotativo | Aberta | T3.3 |
-| A6 | Avalanche sem taxa | Aberta | T4.2 |
-| A7 | Regra de arredondamento | Aberta | T3.5, T4.2, T4.3 |
-| A8 | Próximo recebimento | Aberta | T4.5 |
-| A9 | Pesos da estratégia Equilibrada | Aberta | T4.2 |
-| D2 | Estorno parcial de compra parcelada | Aberta | T3.4 |
-| D3 | Contas que contam como "dinheiro disponível" | Aberta | T2.7, T4.5 |
-| D4 | Fórmula do dinheiro livre | Aberta | T4.5 |
-| D5 | Recorrências virtuais | Proposta técnica | T2.4 |
-| D6 | Edição de lançamentos realizados | Aberta | T2.2 |
-| D8 | Compras internacionais | Aberta | T3.1 |
-| D9 | Destino da cópia externa do backup | Aberta | T1.2 (parte externa) |
-| T-ISO | Isolamento entre usuários no banco | Proposta técnica | T1.2, T1.3 |
-| T-SES | Formato da sessão | Proposta técnica | T1.3 |
+| Termo na tela | Definição |
+|---|---|
+| **Saldo da conta** | Saldo inicial + entradas realizadas − saídas realizadas da conta. Lançamentos cancelados não entram |
+| **Dinheiro disponível** | Soma dos saldos das contas marcadas como "conta para o dia a dia" (padrão: corrente, poupança, dinheiro em espécie). Não inclui limite de cartão, investimentos nem metas |
+| **Recebi no mês** | Receitas realizadas com data no mês. Não incluem transferências, resgates de investimento, entradas de empréstimo nem reembolsos |
+| **Gastei no mês** | Despesas pagas em conta com data no mês + compras no cartão com data de compra no mês, menos estornos do mês. Não inclui pagamento de fatura, pagamento de dívida, transferências nem aportes. Assim cada gasto é contado uma única vez, no dia em que foi feito |
+| **Ainda preciso pagar** (até o fim do mês) | Contas a pagar pendentes ou vencidas (inclusive de meses anteriores) + valor restante das faturas com vencimento até o fim do mês + parcelas de dívidas com vencimento até o fim do mês |
+| **Comprometido** | O que "Ainda preciso pagar" mostra, nos próximos 30 dias |
+| **Dinheiro livre estimado** | Dinheiro disponível − comprometido. Receitas previstas não entram. Limite de cartão não entra |
+| **Quanto devo (dívidas)** | Saldo devedor das dívidas ativas + total ainda não pago das faturas e parcelas futuras dos cartões, sem contar duas vezes as parcelas de parcelamento de fatura (que já estão nas faturas) |
+| **Limite usado do cartão** | Soma das parcelas e encargos ativos − estornos − pagamentos de fatura, em todas as faturas (abertas, fechadas e futuras) |
+| **Limite disponível** | Limite total − limite usado. Se os pagamentos superarem o usado, o cartão tem crédito, mostrado à parte |
+| **Valor investido (aportado)** | Aportes − retiradas de capital |
+| **Valor atual do investimento** | Último saldo informado (renda fixa e outros) ou quantidade × último preço informado (renda variável). Sempre com a data da informação |
+| **Ganho estimado** | Valor atual + retiradas + rendimentos recebidos em dinheiro − aportes. É estimado porque depende do valor informado |
+| **Rentabilidade (TIR)** | Taxa interna de retorno anualizada dos fluxos (aportes, retiradas, rendimentos e valor atual na data informada). Só aparece com dados suficientes |
+| **Patrimônio** | Dinheiro em todas as contas + valor atual dos investimentos − o que devo (dívidas e cartões) |
 
----
-
-## Decisões abertas de infraestrutura e privacidade
-
-### H1 · Hospedagem gratuita em nuvem
-* **Pergunta.** Onde publicar frontend, API e PostgreSQL sem custo, com HTTPS, sem o computador do Diogo ligado?
-* **Alternativas.**
-  1. VM "Always Free" da Oracle Cloud com Docker Compose (Caddy + API + PostgreSQL). Um único endereço, banco sem porta pública. O cadastro pede cartão para verificação de identidade, e a disponibilidade de máquinas gratuitas varia por região.
-  2. Combinação de serviços gratuitos separados (site estático, API e banco gerenciado em provedores diferentes). Costuma ter hibernação, bancos que expiram ou pausam e origens diferentes, o que quebra cookies no Safari.
-  3. Outras VMs gratuitas de grandes nuvens. Em geral também exigem cartão e conta de faturamento.
-* **Recomendação.** Investigar a opção 1 na T1.6. Pela regra de custo do Diogo, se o cadastro exigir cartão com risco de cobrança, **paro e apresento as alternativas antes de qualquer cadastro**. Nenhuma conta será criada por mim.
-* **Consequências.** Opção 1: arquitetura igual à de desenvolvimento, porém com manutenção do sistema operacional e risco de o plano gratuito mudar. Opção 2: menos manutenção, mas mais pontos de falha e problemas de sessão no iPhone.
-* **Bloqueia.** T1.6. Não bloqueia desenvolvimento local.
-* **Observação.** Os limites e condições atuais dos provedores ainda não foram verificados nesta sessão. Serão conferidos nas páginas oficiais na T1.6, e o resultado será registrado aqui.
-
-### G1 · Nome e visibilidade do repositório
-* **Pergunta.** O repositório real é `SeveroTk1345/Finan-as-pessoais-` e está **público**. O pretendido é `financas-pessoais`, privado.
-* **Alternativas.** Renomear e tornar privado (feito pelo Diogo no GitHub) ou manter.
-* **Recomendação.** Renomear e tornar privado antes da T1.2, que vai descrever a infraestrutura de produção.
-* **Consequências.** Renomear não perde nada: o GitHub redireciona o nome antigo. Depois disso, ajusto o `remote` local.
-* **Bloqueia.** Nada técnico.
-
-### P1 · Cache de dados financeiros no aparelho
-* **Pergunta.** Com três pessoas podendo usar o mesmo aparelho, o app deve guardar dados financeiros para leitura sem conexão?
-* **Alternativas.**
-  1. Não guardar dados financeiros no aparelho. Só a estrutura do app fica em cache. Sem conexão, aparece "Sem conexão com o servidor".
-  2. Guardar por usuário, apagar ao sair e ao expirar a sessão, com a faixa "Dados de DD/MM/AAAA HH:MM".
-* **Recomendação.** Opção 1 na V1. É mais simples para usuários pouco técnicos e elimina o risco de outra pessoa ver dados em cache. A opção 2 pode vir depois, com testes de troca de usuário.
-* **Consequências.** Opção 1: sem leitura offline. Opção 2: leitura offline, com risco residual se a sessão não for encerrada.
-* **Bloqueia.** T1.5.
-
-### P2 · Backups individuais
-* **Pergunta.** Além da cópia automática do banco inteiro (infraestrutura), cada usuário poderá exportar e restaurar apenas os próprios dados?
-* **Alternativas.**
-  1. Sim: exportação JSON individual e restauração individual que só substitui os dados do próprio usuário.
-  2. Só exportação individual (CSV/JSON); restauração apenas pelo administrador, a partir da cópia do banco inteiro.
-* **Recomendação.** Exportação individual na T5.1 e restauração individual com confirmação em duas etapas. Restaurar o banco inteiro fica só como recuperação de desastre.
-* **Consequências.** Restauração individual exige testes de isolamento extras (não pode tocar dados de outra pessoa).
-* **Bloqueia.** Parte individual da T1.2 e T5.1. A cópia do banco inteiro na T1.2 não fica bloqueada.
-
-### P3 · Acesso técnico do administrador do servidor
-* **Pergunta.** A aplicação não terá conta com acesso às finanças dos outros. Mas quem administra o servidor (o Diogo) tem acesso técnico ao banco e às cópias de segurança. Como tratar isso?
-* **Alternativas.**
-  1. Informar as outras duas pessoas por escrito e manter cópias de segurança cifradas.
-  2. Criptografia de ponta a ponta no aparelho. Isso impede os cálculos no servidor, contradiz "backend como fonte de verdade" e torna a recuperação de senha impossível sem perder dados.
-* **Recomendação.** Opção 1, documentada em `docs/PRIVACIDADE.md` (a criar na T1.3): o que fica no servidor, quem tem acesso técnico e o compromisso de não consultar o banco diretamente.
-* **Consequências.** A opção 2 exigiria refazer a arquitetura.
-* **Bloqueia.** Uso real pelas três pessoas, não o desenvolvimento.
-
-### D9 · Destino da cópia de segurança fora do servidor
-* **Pergunta.** Para onde vai a cópia cifrada do banco, para sobreviver à perda da VM?
-* **Alternativas.** Download periódico pelo Diogo; armazenamento gratuito em nuvem com arquivo cifrado; outro provedor gratuito de objetos.
-* **Recomendação.** Arquivo cifrado com chave que só o Diogo tem, enviado para um armazenamento gratuito, com consentimento explícito das três pessoas.
-* **Bloqueia.** A parte externa da T1.2. A cópia local automática não fica bloqueada.
-
-### D10 · Prazos de sessão
-* **Situação.** Parcialmente decidida pelo complemento: a sessão expira.
-* **Pergunta em aberto.** Quanto tempo de inatividade até sair, e qual o prazo máximo?
-* **Alternativas.** (a) 30 minutos de inatividade e 12 horas no máximo; (b) 7 dias, com opção "este aparelho é só meu" para 30 dias; (c) outro.
-* **Recomendação.** (b): em uso pessoal no próprio iPhone, pedir senha toda hora faz as pessoas desistirem do app. No aparelho compartilhado, o padrão é a sessão curta.
-* **Bloqueia.** Só os valores na T1.3. A estrutura (expiração no servidor, revogação ao sair) independe.
-
-## Decisões financeiras abertas
-
-Detalhes, exemplos numéricos e testes propostos estão em `ETAPA0_REVISAO.md`, seções 2, 3 e 7.
-
-| ID | Pergunta | Alternativas | Recomendação técnica | Consequência |
-|---|---|---|---|---|
-| A1 | Compra feita no dia do fechamento entra em qual fatura? | Próxima fatura; fatura atual; configurável por cartão | Configurável por cartão, padrão "próxima", com opção de mover a compra manualmente | Opção fixa erra para alguns emissores |
-| A2 | Dia de fechamento ou vencimento inexistente no mês, ou em fim de semana | Último dia do mês e sem ajuste de dia útil; ajuste para dia útil | Último dia do mês, sem ajuste na V1; o realizado usa a data real do pagamento | Projeção pode ficar 1 ou 2 dias adiantada |
-| A3 | Visão mensal em caixa ou competência? | Caixa; competência; as duas em telas diferentes | Visão mensal em caixa; relatório de categorias em competência | Somar as duas na mesma tela gera dupla contagem |
-| A4 | Parcelamento de fatura | Dívida separada (proposta original, **reprovada** na revisão); lançamento do próprio cartão, com a dívida só para consulta | Lançamento do cartão | Dívida separada conta as parcelas duas vezes |
-| A5 / D7 | Pagamento parcial de fatura | (a) restante transferido para a próxima fatura; (b) restante fica na fatura antiga | (a), com juros e IOF como encargos do cartão | Sem uma escolha, o restante pode ser contado duas vezes |
-| A6 | Avalanche com taxa desconhecida | Dívidas sem taxa no fim, com aviso; excluir da estratégia | No fim, com aviso de informação incompleta | Nenhuma taxa é inventada |
-| A7 | Arredondamento | Meio para cima; meio para o par | Meio para cima, só na geração de parcelas e no cálculo de juros | O código atual exige o modo explicitamente (`round_to_cents`) |
-| A8 | "Próximo recebimento" | Receita marcada como principal; 30 dias corridos se não houver | As duas: principal, com 30 dias como alternativa | Sem receita marcada, o cálculo não pode falhar |
-| A9 | Pesos da estratégia Equilibrada | Fórmula da revisão 3.11; outra | Fórmula da revisão com peso 0,5 editável | Pesos aparecem na tela |
-| D2 | Estorno parcial de compra parcelada | Crédito integral na fatura aberta; reduzir parcelas restantes | Crédito integral como padrão, opção de reduzir | Os dois modelos terão testes |
-| D3 | Quais contas contam como "dinheiro disponível"? | Só corrente e dinheiro em espécie; também poupança; também reserva | Marcação por conta, padrão: corrente, espécie e poupança | Investimentos e reserva nunca somados sem aviso |
-| D4 | Fórmula do dinheiro livre | Revisão 3.9 | Revisão 3.9 | É o número principal do Início |
-| D6 | Lançamentos realizados podem ser editados? | Edição livre com histórico; só por estorno/ajuste | Edição livre com histórico de alterações (mais simples para os usuários) | Histórico obrigatório para auditoria |
-| D8 | Compras em moeda estrangeira | Só em reais pelo valor da fatura, IOF como encargo; multimoeda | Só em reais na V1 | Multimoeda fica fora da V1 |
-
-## Propostas técnicas (para revisão do Codex)
-
-### T-ISO · Isolamento entre usuários no banco
-* **Proposta.**
-  1. Toda tabela financeira tem `owner_id NOT NULL` referenciando `users`.
-  2. **Chaves estrangeiras compostas** `(owner_id, id)`. Exemplo: uma compra referencia `(owner_id, card_id)` do cartão. Assim o próprio banco impede que a compra de A aponte para o cartão de B, mesmo com bug na aplicação.
-  3. Repositórios recebem sempre o usuário autenticado e filtram por `owner_id`. O `owner_id` nunca vem do corpo ou da URL.
-  4. Registro de outro usuário responde **404**, igual a um registro inexistente, para não revelar que ele existe.
-  5. **Row-Level Security** como segunda camada: a aplicação conecta com um papel sem `BYPASSRLS` e que não é dono das tabelas; cada transação define `SET LOCAL app.user_id`; políticas `USING (owner_id = current_setting('app.user_id')::uuid)`. Migrações rodam com outro papel.
-  6. Testes de isolamento gerados para **todas** as rotas: para cada rota que recebe um ID, A tenta ler, editar e excluir o registro de B, e vice-versa.
-* **Consequência.** Pequena complexidade extra nas migrações e na conexão. Com o pool de conexões, o `SET LOCAL` precisa ficar dentro da transação, e haverá teste que comprova isso.
-
-### T-SES · Formato da sessão
-* **Proposta.** Sessões guardadas no banco (tabela `sessions`), com identificador aleatório em cookie `HttpOnly; Secure; SameSite=Strict` e apenas o hash do identificador salvo no banco. Sem JWT.
-* **Motivo.** Permite sair de verdade, expirar no servidor e encerrar a sessão de um usuário sem afetar os outros. JWT não pode ser revogado sem uma tabela, e aí perde a vantagem.
-
-### D5 · Recorrências
-* **Proposta.** Ocorrências calculadas sob demanda a partir da regra e da data original (`monthly_occurrence`, já implementada). Uma ocorrência só é gravada quando confirmada, editada ou paga. Isso atende ao requisito de não salvar projeções como se fossem lançamentos.
-
-## Decisões tomadas
+## 2. Decisões financeiras
 
 | ID | Decisão | Origem |
 |---|---|---|
-| D1 | Hospedagem em nuvem; servidor em casa descartado | M1 (Diogo) |
-| U1 | Três usuários isolados, sem conta administrativa com acesso financeiro | M2 (Diogo) |
-| U2 | Navegação: Início, Contas, Contas a pagar, Dívidas, Investimentos, Mais | M2 (Diogo) |
-| U3 | Fonte-base 18 px, botões com 48 px, contraste alto | M2 (Diogo) |
-| F1 | Dinheiro em centavos inteiros; `float` proibido no domínio | Auditoria 5.3, implementado na T1.1 |
-| F2 | Resto da divisão em parcelas vai para a primeira parcela | Auditoria 5.3, implementado na T1.1 |
-| F3 | Recorrência mensal calculada a partir da data original | Revisão 4.1, implementado na T1.1 |
-| F4 | Datas civis sem hora e sem UTC; "hoje" em America/Sao_Paulo | Auditoria 5.3, implementado na T1.1 |
-| F5 | No formato BR, o ponto é sempre separador de milhar (`"1.234"` = R$ 1.234,00) | T1.1. Arquivos em formato americano serão declarados na importação |
+| F1 | Dinheiro em centavos inteiros; `float` proibido no domínio | Técnica (T1.1) |
+| F2 | Resto da divisão em parcelas vai para a primeira parcela (R$ 100,00 em 3× = 33,34 + 33,33 + 33,33) | Auditoria |
+| F3 | Recorrência mensal calculada a partir da data original | Técnica (T1.1) |
+| F4 | Datas civis sem hora; "hoje" no fuso America/Sao_Paulo | Técnica (T1.1) |
+| F5 | No formato BR, ponto é sempre separador de milhar | Técnica (T1.1) |
+| F6 (A7) | Arredondamento meio para cima, só na geração de parcelas e no cálculo de juros. Somas nunca arredondam | M3 |
+| F7 (A3) | Visão mensal de caixa (o que entrou e saiu das contas) e visão de gastos por categoria pela data do gasto. As duas aparecem em telas separadas e nunca somadas | M3 |
+| F8 (D5) | Recorrências geram ocorrências calculadas na hora. Uma ocorrência só é gravada quando paga, editada ou cancelada | M3 |
+| F9 (D6) | Lançamentos realizados podem ser editados; a edição guarda histórico (valores anteriores) e a exclusão vira cancelamento, que preserva o registro | M3 |
+| F10 (D3) | Cada conta tem a marcação "conta para o dia a dia". Padrão: sim para corrente, poupança e espécie; não para "outra" | M3 |
+| F11 (A8) | "Próximo recebimento" = próxima receita prevista marcada como principal; se não houver, 30 dias | M3 |
+| F12 | Contas a pagar vencidas continuam pendentes até serem pagas ou canceladas. Nunca são marcadas como pagas automaticamente | Requisito |
+| F13 | Pagamento de conta a pagar gera o lançamento de despesa; a conta a pagar em si não é despesa. Pagamentos parciais acumulam até o valor total | M3 |
+| F14 | Transferência gera dois lançamentos ligados (saída e entrada) e fica fora de receitas e despesas | Requisito |
+| F15 | Entrada de empréstimo e reembolso não são receita; resgate de investimento não é receita; aporte não é despesa | M3 |
+| F16 (D8) | Compras em moeda estrangeira registradas em reais pelo valor cobrado; IOF como encargo do cartão | M3 |
+
+### Cartões
+| ID | Decisão | Origem |
+|---|---|---|
+| F-CARTAO-1 | A fatura é identificada pela data de vencimento. Se o dia de vencimento for menor ou igual ao de fechamento, o vencimento cai no mês seguinte ao fechamento | M3 |
+| F-CARTAO-2 (A1) | Compra no dia do fechamento vai para a próxima fatura (configurável por cartão) | M3 |
+| F-CARTAO-3 (A2) | Dia de fechamento ou vencimento que não existe no mês vira o último dia do mês. Sem ajuste para dia útil | M3 |
+| F-CARTAO-4 | A fatura de cada parcela é gravada na criação da compra. Mudar o dia de fechamento não mexe em compras antigas | M3 |
+| F-CARTAO-5 (A5) | Pagamento parcial: o restante continua devido **na própria fatura** (situação "parcialmente paga" ou "vencida") até ser pago. Juros e IOF que o banco cobrar são lançados pelo usuário como encargo na fatura seguinte. Nada é transferido automaticamente, então o restante nunca aparece duas vezes | M3 |
+| F-CARTAO-6 (A4) | Renegociação/parcelamento de fatura: o valor renegociado sai da fatura como crédito "transferido para renegociação"; cria-se uma dívida do tipo "parcelamento de fatura"; as parcelas do acordo entram nas faturas futuras como lançamentos do cartão ligados à dívida. A diferença entre o total do acordo e o valor renegociado é registrada como juros. A dívida não aceita pagamento direto (é paga pelas faturas) e não entra de novo no "Quanto devo" | M3 |
+| F-CARTAO-7 | Cancelamento de compra: parcelas de faturas ainda não fechadas são canceladas; parcelas de faturas já fechadas geram crédito na fatura aberta. O histórico é preservado | M3 |
+| F-CARTAO-8 (D2) | Estorno parcial: crédito na fatura aberta, no valor informado | M3 |
+| F-CARTAO-9 | Encargos (anuidade, juros, IOF, tarifas) são lançamentos à vista do cartão, na categoria "Juros e tarifas" | M3 |
+
+### Dívidas
+| ID | Decisão | Origem |
+|---|---|---|
+| F-DIV-1 | O saldo devedor é ancorado: valor informado em uma data + encargos lançados − pagamentos de principal depois dessa data | Revisão 3.6 |
+| F-DIV-2 | Pagamento pode informar juros; se não informar, o valor inteiro abate o saldo e o saldo aparece como "estimado" | Revisão 3.7 |
+| F-DIV-3 | Taxa desconhecida fica vazia; nunca é tratada como zero sem aviso | Requisito |
+| F-DIV-4 | Taxa anual → mensal por (1 + a)^(1/12) − 1 | Revisão 3.8 |
+| F-DIV-5 (A6) | Estratégias: maior juros primeiro (dívidas sem taxa vão para o fim, com aviso), menor saldo primeiro, menor parcela primeiro e equilibrada | M3 |
+| F-DIV-6 (A9) | Equilibrada: nota = 0,5 × (taxa ÷ maior taxa conhecida) + 0,5 × (parcela ÷ saldo) ÷ maior (parcela ÷ saldo). Sem taxa, só o segundo termo, com aviso | M3 |
+| F-DIV-7 | Renegociação: a dívida antiga fica "renegociada" com saldo zero por evento sem saída de dinheiro; a nova guarda a ligação com a antiga | M3 |
+
+### Investimentos e metas
+| ID | Decisão | Origem |
+|---|---|---|
+| F-INV-1 | Aporte aumenta o capital investido; retirada diminui; nenhum dos dois é ganho ou perda | Requisito |
+| F-INV-2 | Renda variável usa preço médio: compras somam quantidade e custo (com taxas); vendas reduzem o custo proporcionalmente | M3 |
+| F-INV-3 | Valor atual sempre vem de informação manual com data. Mais de 30 dias sem atualizar: aviso "pode estar desatualizado" | M3 |
+| F-INV-4 | Taxa real = (1 + nominal) ÷ (1 + inflação) − 1 | Revisão 3.8 |
+| F-INV-5 | Movimento de investimento pode ser ligado a uma conta; aí gera o lançamento correspondente na conta (aporte = saída, retirada/rendimento recebido = entrada), fora de receitas e despesas | M3 |
+| F-META-1 | Metas acumulam por contribuições registradas. Projeção usa só a contribuição mensal planejada; rendimento só se o usuário informar a taxa, com o aviso de estimativa | M3 |
+
+## 3. Decisões de infraestrutura, segurança e privacidade
+
+| ID | Decisão | Origem |
+|---|---|---|
+| D1 | Hospedagem em nuvem; servidor em casa descartado | Diogo |
+| G1 | Repositório pode continuar público, sem dados pessoais nem segredos | Diogo |
+| H1 | Primeira candidata: VM gratuita (Oracle Cloud Always Free) com Docker Compose. **Nenhuma conta será criada pelo Claude.** Se o cadastro exigir cartão com risco de cobrança, a decisão volta ao Diogo | Diogo + M3 |
+| U1 | Três usuários isolados, sem conta administrativa com acesso às finanças | Diogo |
+| U3 | Fonte-base 18 px, alvos de toque 48 px, alto contraste, preto e branco | Diogo |
+| P1 | Nenhum dado financeiro em cache no aparelho. O service worker guarda só a estrutura do app. Sem conexão, o app avisa e bloqueia o envio | M3 |
+| P2 | Exportação individual (JSON e CSV) pelo próprio usuário. Restauração só do banco inteiro, pelo administrador | M3 |
+| P3 | As três pessoas serão informadas, em `docs/PRIVACIDADE.md`, de que quem administra o servidor tem acesso técnico ao banco | M3 |
+| D9 | Cópia externa do backup: **pendente**. Não será habilitado nenhum serviço pago ou que exija cartão sem autorização | Pendente (Diogo) |
+| D10 | Sessão: com "Manter conectado neste aparelho", 30 dias no máximo e 7 dias sem uso; sem a opção, 12 horas no máximo e 30 minutos sem uso | M3 |
+| T-ISO | Isolamento: `owner_id` + chaves compostas + RLS + filtro na aplicação | Técnica (T1.2) |
+| T-SES | Sessões no banco, cookie `HttpOnly; Secure; SameSite=Strict`, só o hash do token salvo | Técnica |
+| T-IDEM | Toda criação financeira aceita `Idempotency-Key`; repetição devolve o resultado original | Técnica |
+| T-CSRF | Métodos que alteram dados exigem `Origin` igual ao do app e o cabeçalho `X-Requested-With` | Técnica |
+| T-SPA | O FastAPI serve o site estático e a API na mesma origem; em produção, o Caddy faz HTTPS na frente | Técnica |
+
+## 4. Pendências que dependem do Diogo
+| ID | O que falta | Bloqueia |
+|---|---|---|
+| H1 | Criar a conta no provedor de nuvem e liberar a VM (o Claude não cria contas) | Publicação |
+| D9 | Escolher o destino da cópia externa do backup | Proteção contra perda do servidor |
+| P3 | Comunicar às outras duas pessoas o que está em `PRIVACIDADE.md` | Uso real pelas três pessoas |

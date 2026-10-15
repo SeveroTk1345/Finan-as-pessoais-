@@ -1,0 +1,6 @@
+# Só para desenvolvimento: publica o banco em 127.0.0.1 (nunca em 0.0.0.0).
+# docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+services:
+  db:
+    ports:
+      - "127.0.0.1:5432:5432"
