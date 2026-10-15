@@ -14,7 +14,7 @@ import { billTitle, type Bill, type Obligation } from "@/lib/types";
 
 type Tab = "pagar" | "receber";
 
-function OpenBill({ bill, children }: { bill: Bill; children: React.ReactNode }) {
+function OpenBill({ bill, children }: { bill: Pick<Bill, "id" | "rule_id" | "occurrence_date">; children: React.ReactNode }) {
   const router = useRouter();
   const { flash } = useShell();
   const [busy, setBusy] = useState(false);
@@ -66,19 +66,28 @@ export default function BillsPage() {
           <>
             <p>Total: <strong><Money cents={upcoming.data.total_cents} /></strong> (contas, faturas e parcelas, sem repetir nada).</p>
             <ul className="list">
-              {upcoming.data.items.filter((o) => o.source !== "conta").map((o, i) => (
-                <li key={`${o.source}-${o.id}-${o.due_date}-${i}`}>
-                  <Link className="list-row" href={OBL_LINK(o) ?? "/a-pagar/"}>
+              {upcoming.data.items.map((o, i) => {
+                const row = (
+                  <>
                     <span className="main">
                       <span className="title">{o.description}</span>
                       <span className="sub">Vence <DateText iso={o.due_date} /> {o.overdue ? <Badge tone="neg">Vencida</Badge> : null}</span>
                     </span>
                     <Money cents={o.amount_cents} className="amount" />
-                  </Link>
-                </li>
-              ))}
+                  </>
+                );
+                return (
+                  <li key={`${o.source}-${o.id}-${o.due_date}-${i}`}>
+                    {o.source === "conta" ? (
+                      <OpenBill bill={{ id: o.virtual ? null : o.id, rule_id: o.rule_id ?? null, occurrence_date: o.due_date }}>{row}</OpenBill>
+                    ) : (
+                      <Link className="list-row" href={OBL_LINK(o) ?? "/a-pagar/"}>{row}</Link>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
-            <p className="small muted">Faturas e parcelas de dívidas aparecem aqui para você ver tudo junto. Contas avulsas estão na lista abaixo.</p>
+            <p className="small muted">Contas, faturas e parcelas de dívidas juntas, em ordem de vencimento. Abaixo, as contas mês a mês.</p>
           </>
         )}
       </section>

@@ -180,3 +180,18 @@ API (`test_month_plan_api.py`, 9 testes): sem dados pede a renda; divisão com c
 1. A tabela da projeção ficava cortada à direita no iPhone: virou lista "Em 1 ano / Você colocou".
 2. Valores "R$" quebravam de linha separados do número em listas e tabelas: valores não quebram mais linha.
 
+## Revisão da versão de computador · 15/10/2026
+
+Capturas reais em 1440 × 900 de 14 telas, com dados fictícios. A largura do conteúdo (até 880 px) foi mantida por legibilidade.
+
+| Verificação | Resultado |
+|---|---|
+| Playwright | **24 aprovados** (novo: o total de "Próximos 30 dias" é a soma dos itens listados) |
+| `vitest` em 3 fusos | 56 aprovados em cada fuso |
+| `pytest` (módulos afetados) | 26 aprovados |
+
+### Defeitos encontrados e corrigidos
+1. "Próximos 30 dias" somava contas avulsas no total, mas não as listava (vale também para o celular): agora lista tudo o que compõe o total, em ordem de vencimento.
+2. "Receitas e despesas" quebrava em duas linhas no menu lateral: menu mais largo, sem quebra.
+3. Parcela de carnê aparecia como "Sofá (1/12)" num lugar e "Sofá · parcela 1 de 12" em outro: agora o texto é igual nos dois.
+

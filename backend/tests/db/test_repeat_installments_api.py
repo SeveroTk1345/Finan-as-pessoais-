@@ -178,7 +178,7 @@ def test_mil_reais_em_dez_vezes_vira_dez_contas_a_pagar(trio: Trio) -> None:
     nov = _bills(api, "2026-11-01", "2026-11-30", overdue=False)
     assert [(b["description"], b["installment_number"]) for b in nov] == [("Geladeira", 1)]
     obligations = api.get("/api/a-pagar?dias=60").json()
-    assert "Geladeira (1/10)" in [o["description"] for o in obligations["items"]]
+    assert "Geladeira · parcela 1 de 10" in [o["description"] for o in obligations["items"]]
 
     first = plan["bills"][0]["id"]
     assert api.post(f"/api/contas-a-pagar/{first}/pagar", {}).status_code == 201

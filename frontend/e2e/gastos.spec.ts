@@ -92,3 +92,19 @@ test("plano do mês divide a renda e projeta o investimento", async () => {
   await expect(projection).toContainText("Você colocou R$ 7.200,00"); // 12 x R$ 600,00 em 1 ano
   await expect(page.getByText(/10% ao ano informado por você/)).toBeVisible();
 });
+
+test("o total dos próximos 30 dias é a soma do que aparece na lista", async () => {
+  // Conta avulsa vencendo hoje: precisa aparecer no quadro e no total.
+  await open(page, "/a-pagar/nova/?tipo=pagar");
+  await page.getByLabel("Descrição").fill("Dentista");
+  await money(page, "Valor", 25000);
+  await page.getByRole("button", { name: "Salvar" }).click();
+  await flash(page, "Salvo.");
+  await open(page, "/a-pagar/");
+  const box = page.getByRole("region", { name: "Próximos 30 dias" });
+  const cents = (text: string) => Number(text.replace(/[^\d-]/g, ""));
+  const total = cents(await box.locator("p strong").first().innerText());
+  const items = await box.locator(".list .amount").allInnerTexts();
+  expect(items.length).toBeGreaterThan(0);
+  expect(items.reduce((s, t) => s + cents(t), 0)).toBe(total);
+});

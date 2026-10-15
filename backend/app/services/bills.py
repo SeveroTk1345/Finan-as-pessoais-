@@ -514,9 +514,9 @@ def cancel_installment_plan(ctx: Ctx, group: UUID) -> dict[str, Any]:
 
 
 def bill_title(bill: dict[str, Any]) -> str:
-    """Descrição com o número da parcela: "Geladeira (3/10)"."""
+    """Descrição com o número da parcela, igual à tela: "Geladeira · parcela 3 de 10"."""
     if bill.get("installment_number"):
-        return f"{bill['description']} ({bill['installment_number']}/{bill['installments_total']})"
+        return f"{bill['description']} · parcela {bill['installment_number']} de {bill['installments_total']}"
     return str(bill["description"])
 
 
