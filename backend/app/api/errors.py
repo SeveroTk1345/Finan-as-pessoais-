@@ -8,6 +8,7 @@ from typing import Any
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from sqlalchemy.exc import IntegrityError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 logger = logging.getLogger("financas.api")
@@ -88,6 +89,18 @@ def install_error_handlers(app: FastAPI) -> None:
             {"detail": message or _HTTP_MESSAGES.get(exc.status_code, "Erro na requisição.")},
             status_code=exc.status_code,
             headers=getattr(exc, "headers", None),
+        )
+
+    @app.exception_handler(IntegrityError)
+    async def _integrity(request: Request, exc: IntegrityError) -> JSONResponse:
+        # Última barreira (chaves compostas, restrições do banco). Sem detalhes internos.
+        logger.warning("integridade recusada em %s %s", request.method, request.url.path)
+        return JSONResponse(
+            {
+                "detail": "Não foi possível salvar: algum dado não é válido ou não pertence a você. "
+                "Nada foi gravado."
+            },
+            status_code=422,
         )
 
     @app.exception_handler(Exception)
