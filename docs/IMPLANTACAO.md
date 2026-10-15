@@ -37,7 +37,7 @@ Coloque o nome em `FIN_DOMAIN` no `.env`.
 
 1. Crie a VM (Ubuntu 24.04 ou equivalente) na camada gratuita. Libere **só** as portas 80 e 443 no firewall do provedor (e a 22 para SSH, de preferência só do seu IP).
 2. Instale Docker e o plugin Compose (instruções oficiais do Docker para a distribuição).
-3. Copie o projeto: `git clone https://github.com/SeveroTk1345/Finan-as-pessoais-.git financas && cd financas`
+3. Copie o projeto (a aplicação está na branch `desenvolvimento`; a `main` só recebe depois da revisão): `git clone -b desenvolvimento https://github.com/SeveroTk1345/Finan-as-pessoais-.git financas && cd financas`
 4. Configure:
    ```bash
    cd deploy
