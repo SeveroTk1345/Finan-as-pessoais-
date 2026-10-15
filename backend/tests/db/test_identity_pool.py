@@ -55,9 +55,7 @@ def test_mesma_conexao_alternando_usuarios(single_conn_engine: Engine, users: Us
     assert len(pids) == 1
 
 
-def test_apos_commit_a_conexao_volta_sem_identidade(
-    single_conn_engine: Engine, users: Users
-) -> None:
+def test_apos_commit_a_conexao_volta_sem_identidade(single_conn_engine: Engine, users: Users) -> None:
     _seed(single_conn_engine, users)
     _visible(single_conn_engine, users.ana)
     with single_conn_engine.begin() as conn:
@@ -65,9 +63,7 @@ def test_apos_commit_a_conexao_volta_sem_identidade(
         assert conn.execute(text("SELECT count(*) FROM accounts")).scalar() == 0
 
 
-def test_apos_erro_e_rollback_a_identidade_nao_vaza(
-    single_conn_engine: Engine, users: Users
-) -> None:
+def test_apos_erro_e_rollback_a_identidade_nao_vaza(single_conn_engine: Engine, users: Users) -> None:
     _seed(single_conn_engine, users)
     with pytest.raises(RuntimeError), user_transaction(single_conn_engine, users.ana) as conn:
         conn.execute(text("SELECT 1"))

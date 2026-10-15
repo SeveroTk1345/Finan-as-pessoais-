@@ -72,9 +72,7 @@ def entrar(
             ip=client_ip(request),
         )
     except auth_service.LoginBlockedError as exc:
-        raise ApiError(
-            429, "Muitas tentativas erradas. Espere 15 minutos e tente de novo."
-        ) from exc
+        raise ApiError(429, "Muitas tentativas erradas. Espere 15 minutos e tente de novo.") from exc
     except auth_service.InvalidCredentialsError as exc:
         # Mesma mensagem para usuário inexistente e senha errada.
         raise ApiError(401, "Usuário ou senha incorretos.") from exc
@@ -125,9 +123,7 @@ def trocar_senha(
             engine, user.id, user.token_hash, current=payload.senha_atual, new=payload.nova_senha
         )
     except auth_service.InvalidCredentialsError as exc:
-        raise ApiError(
-            400, "A senha atual está incorreta.", {"senha_atual": "Senha incorreta."}
-        ) from exc
+        raise ApiError(400, "A senha atual está incorreta.", {"senha_atual": "Senha incorreta."}) from exc
     except WeakPasswordError as exc:
         raise ApiError(400, str(exc), {"nova_senha": str(exc)}) from exc
     return Response(status_code=204)

@@ -70,9 +70,7 @@ def _fingerprint(engine: Engine) -> dict[str, tuple[int, str]]:
 
 def _database_exists(admin: Engine, name: str) -> bool:
     with admin.connect() as conn:
-        return bool(
-            conn.execute(text("SELECT 1 FROM pg_database WHERE datname=:n"), {"n": name}).scalar()
-        )
+        return bool(conn.execute(text("SELECT 1 FROM pg_database WHERE datname=:n"), {"n": name}).scalar())
 
 
 @pytest.fixture
@@ -160,20 +158,18 @@ def test_backup_e_restauracao_completa(
                 )
             ).all()
             policies = (
-                conn.execute(text("SELECT policyname FROM pg_policies ORDER BY policyname"))
-                .scalars()
-                .all()
+                conn.execute(text("SELECT policyname FROM pg_policies ORDER BY policyname")).scalars().all()
             )
             public_connect = conn.execute(
                 text("SELECT has_database_privilege('public', current_database(), 'CONNECT')")
             ).scalar()
         assert [tuple(r) for r in rls] == [("accounts", True, True), ("users", True, True)]
-        assert policies == [
-            "accounts_owner_isolation",
-            "idempotency_keys_owner_isolation",
-            "sessions_owner_isolation",
-            "users_self",
-        ]
+        with admin_engine.connect() as conn:
+            original_policies = (
+                conn.execute(text("SELECT policyname FROM pg_policies ORDER BY policyname")).scalars().all()
+            )
+        assert policies == original_policies
+        assert "accounts_owner_isolation" in policies and "users_self" in policies
         assert public_connect is False
     finally:
         restored_admin.dispose()
@@ -212,9 +208,7 @@ def test_restauracao_recusa_sem_arquivo_de_hash(
 ) -> None:
     dump = _backup(test_db, tmp_path)
     (tmp_path / f"{dump.name}.sha256").unlink()
-    proc = _run(
-        ["sh", str(RESTORE), str(dump), "fin_sem_hash"], _pg_env(test_db.admin_url, "postgres")
-    )
+    proc = _run(["sh", str(RESTORE), str(dump), "fin_sem_hash"], _pg_env(test_db.admin_url, "postgres"))
     assert proc.returncode != 0
     assert not _database_exists(server_admin, "fin_sem_hash")
 
@@ -224,9 +218,7 @@ def test_restauracao_nunca_sobrescreve_banco_existente(
 ) -> None:
     dump = _backup(test_db, tmp_path)
     before = _fingerprint(admin_engine)
-    proc = _run(
-        ["sh", str(RESTORE), str(dump), test_db.name], _pg_env(test_db.admin_url, "postgres")
-    )
+    proc = _run(["sh", str(RESTORE), str(dump), test_db.name], _pg_env(test_db.admin_url, "postgres"))
     assert proc.returncode != 0
     assert "já existe" in proc.stderr
     assert _fingerprint(admin_engine) == before
@@ -253,9 +245,7 @@ def test_restauracao_que_falha_no_meio_remove_o_banco_parcial(
         check=True,
         stdout=(tmp_path / f"{fake.name}.sha256").open("w"),
     )
-    proc = _run(
-        ["sh", str(RESTORE), str(fake), "fin_parcial"], _pg_env(test_db.admin_url, "postgres")
-    )
+    proc = _run(["sh", str(RESTORE), str(fake), "fin_parcial"], _pg_env(test_db.admin_url, "postgres"))
     assert proc.returncode != 0
     assert not _database_exists(server_admin, "fin_parcial")
 
@@ -268,9 +258,7 @@ def test_backup_com_falha_de_conexao_nao_deixa_arquivo(test_db: DbInfo, tmp_path
     assert list(tmp_path.iterdir()) == []
 
 
-def test_rotacao_mantem_somente_as_mais_recentes(
-    test_db: DbInfo, populated: Users, tmp_path: Path
-) -> None:
+def test_rotacao_mantem_somente_as_mais_recentes(test_db: DbInfo, populated: Users, tmp_path: Path) -> None:
     old = [
         "fin_20200101T000000Z_1.dump",
         "fin_20200102T000000Z_2.dump",

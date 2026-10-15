@@ -25,13 +25,9 @@ depends_on = None
 
 def upgrade() -> None:
     bind = op.get_bind()
-    exists = bind.execute(
-        text("SELECT 1 FROM pg_roles WHERE rolname = :r"), {"r": APP_ROLE}
-    ).scalar()
+    exists = bind.execute(text("SELECT 1 FROM pg_roles WHERE rolname = :r"), {"r": APP_ROLE}).scalar()
     if not exists:
-        raise RuntimeError(
-            f"o papel {APP_ROLE} não existe; crie-o antes (deploy/initdb ou scripts de teste)"
-        )
+        raise RuntimeError(f"o papel {APP_ROLE} não existe; crie-o antes (deploy/initdb ou scripts de teste)")
 
     op.execute(f"GRANT USAGE ON SCHEMA public TO {APP_ROLE}")
     op.execute(CURRENT_USER_FUNCTION_SQL)

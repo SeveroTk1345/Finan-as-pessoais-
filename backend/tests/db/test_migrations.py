@@ -12,7 +12,7 @@ from sqlalchemy import Engine, create_engine, text
 
 from tests.db.conftest import BACKEND_DIR, DbInfo
 
-HEAD = "0002"
+HEAD = "0003"
 
 
 @pytest.fixture
@@ -101,17 +101,12 @@ def test_restricoes_de_username(admin_engine: Engine, username: str) -> None:
 def test_username_unico(admin_engine: Engine) -> None:
     with admin_engine.begin() as conn:
         conn.execute(
-            text(
-                "INSERT INTO users (username, display_name, password_hash) VALUES ('dup', 'X', '!')"
-            )
+            text("INSERT INTO users (username, display_name, password_hash) VALUES ('dup', 'X', '!')")
         )
     try:
         with pytest.raises(Exception, match="duplicate key"), admin_engine.begin() as conn:
             conn.execute(
-                text(
-                    "INSERT INTO users (username, display_name, password_hash) "
-                    "VALUES ('dup', 'Y', '!')"
-                )
+                text("INSERT INTO users (username, display_name, password_hash) VALUES ('dup', 'Y', '!')")
             )
     finally:
         with admin_engine.begin() as conn:

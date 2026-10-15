@@ -57,9 +57,7 @@ def current_user(request: Request, engine: Engine = Depends(get_engine)) -> Curr
         raise ApiError(401, "Sua sessão terminou. Entre novamente.")
     token_hash = hash_token(token)
     with engine.begin() as conn:
-        user_id = conn.execute(
-            text("SELECT auth_session_user(:h)"), {"h": token_hash}
-        ).scalar_one_or_none()
+        user_id = conn.execute(text("SELECT auth_session_user(:h)"), {"h": token_hash}).scalar_one_or_none()
     if user_id is None:
         raise ApiError(401, "Sua sessão terminou. Entre novamente.")
     return CurrentUser(id=user_id, token_hash=token_hash)
@@ -83,7 +81,5 @@ class UserDb:
             yield conn
 
 
-def user_db(
-    user: CurrentUser = Depends(current_user), engine: Engine = Depends(get_engine)
-) -> UserDb:
+def user_db(user: CurrentUser = Depends(current_user), engine: Engine = Depends(get_engine)) -> UserDb:
     return UserDb(engine=engine, user_id=user.id)

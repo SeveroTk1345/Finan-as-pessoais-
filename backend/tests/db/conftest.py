@@ -65,10 +65,7 @@ def test_db() -> Iterator[DbInfo]:
         role_exists = conn.execute(text("SELECT 1 FROM pg_roles WHERE rolname='fin_app'")).scalar()
         if not role_exists:
             conn.execute(
-                text(
-                    "CREATE ROLE fin_app LOGIN NOSUPERUSER NOBYPASSRLS NOCREATEDB "
-                    "NOCREATEROLE NOINHERIT"
-                )
+                text("CREATE ROLE fin_app LOGIN NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE NOINHERIT")
             )
         # O servidor de teste é dedicado; a senha muda a cada execução.
         # Comandos utilitários não aceitam parâmetros no servidor: o psycopg monta o

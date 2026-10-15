@@ -24,9 +24,7 @@ depends_on = None
 def upgrade() -> None:
     op.execute("ALTER TABLE users ADD COLUMN password_changed_at timestamptz")
     # Cada usuário pode trocar a própria senha e o próprio nome (política users_self).
-    op.execute(
-        f"GRANT UPDATE (password_hash, password_changed_at, display_name) ON users TO {APP_ROLE}"
-    )
+    op.execute(f"GRANT UPDATE (password_hash, password_changed_at, display_name) ON users TO {APP_ROLE}")
 
     op.execute(
         """
@@ -176,7 +174,5 @@ def downgrade() -> None:
     op.execute("DROP TABLE idempotency_keys")
     op.execute("DROP TABLE login_attempts")
     op.execute("DROP TABLE sessions")
-    op.execute(
-        f"REVOKE UPDATE (password_hash, password_changed_at, display_name) ON users FROM {APP_ROLE}"
-    )
+    op.execute(f"REVOKE UPDATE (password_hash, password_changed_at, display_name) ON users FROM {APP_ROLE}")
     op.execute("ALTER TABLE users DROP COLUMN password_changed_at")

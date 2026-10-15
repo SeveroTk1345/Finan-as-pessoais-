@@ -27,9 +27,7 @@ def install_middleware(app: FastAPI, settings: Settings) -> None:
     origins = settings.origins
 
     @app.middleware("http")
-    async def security(
-        request: Request, call_next: Callable[[Request], Awaitable[Response]]
-    ) -> Response:
+    async def security(request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
         path = request.url.path
         if path.startswith("/api/") and request.method in UNSAFE_METHODS:
             origin = (request.headers.get("origin") or "").rstrip("/")
@@ -50,9 +48,7 @@ def install_middleware(app: FastAPI, settings: Settings) -> None:
         response.headers.setdefault("Content-Security-Policy", CSP)
         response.headers.setdefault("Cross-Origin-Opener-Policy", "same-origin")
         if settings.is_production:
-            response.headers.setdefault(
-                "Strict-Transport-Security", "max-age=31536000; includeSubDomains"
-            )
+            response.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
         if path.startswith("/api/"):
             # Dados financeiros nunca ficam em cache do navegador nem de proxies,
             # e o botão "voltar" após sair não reexibe respostas antigas.

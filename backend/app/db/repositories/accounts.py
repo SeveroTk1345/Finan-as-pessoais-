@@ -89,9 +89,7 @@ class AccountRepository:
 
     def get(self, account_id: UUID) -> Account | None:
         row = self._conn.execute(
-            select(accounts).where(
-                accounts.c.id == account_id, accounts.c.owner_id == self._owner_id
-            )
+            select(accounts).where(accounts.c.id == account_id, accounts.c.owner_id == self._owner_id)
         ).one_or_none()
         return _to_account(row) if row is not None else None
 
@@ -120,8 +118,6 @@ class AccountRepository:
 
     def delete(self, account_id: UUID) -> bool:
         result = self._conn.execute(
-            sql_delete(accounts).where(
-                accounts.c.id == account_id, accounts.c.owner_id == self._owner_id
-            )
+            sql_delete(accounts).where(accounts.c.id == account_id, accounts.c.owner_id == self._owner_id)
         )
         return result.rowcount == 1

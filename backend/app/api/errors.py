@@ -79,17 +79,11 @@ def install_error_handlers(app: FastAPI) -> None:
             ctx_msg = (err.get("ctx") or {}).get("error")
             msg = str(ctx_msg) if ctx_msg else _MESSAGES.get(err.get("type", ""), "Valor inválido.")
             fields.setdefault(name, msg)
-        return JSONResponse(
-            {"detail": "Confira os campos destacados.", "campos": fields}, status_code=422
-        )
+        return JSONResponse({"detail": "Confira os campos destacados.", "campos": fields}, status_code=422)
 
     @app.exception_handler(StarletteHTTPException)
     async def _http(_: Request, exc: StarletteHTTPException) -> JSONResponse:
-        message = (
-            exc.detail
-            if isinstance(exc.detail, str) and exc.status_code not in (404, 405)
-            else None
-        )
+        message = exc.detail if isinstance(exc.detail, str) and exc.status_code not in (404, 405) else None
         return JSONResponse(
             {"detail": message or _HTTP_MESSAGES.get(exc.status_code, "Erro na requisição.")},
             status_code=exc.status_code,
@@ -99,9 +93,7 @@ def install_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(Exception)
     async def _unexpected(request: Request, exc: Exception) -> JSONResponse:
         # Só o tipo do erro e a rota vão para o log: nunca valores ou descrições.
-        logger.error(
-            "erro inesperado em %s %s: %s", request.method, request.url.path, type(exc).__name__
-        )
+        logger.error("erro inesperado em %s %s: %s", request.method, request.url.path, type(exc).__name__)
         return JSONResponse(
             {"detail": "Algo deu errado e nada foi salvo. Tente de novo em instantes."},
             status_code=500,

@@ -29,9 +29,7 @@ def app(app_engine: Engine, admin_engine: Engine) -> FastAPI:
     return build_app(app_engine)
 
 
-def test_login_cria_sessao_e_eu_retorna_o_usuario(
-    app: FastAPI, admin_engine: Engine, users: Users
-) -> None:
+def test_login_cria_sessao_e_eu_retorna_o_usuario(app: FastAPI, admin_engine: Engine, users: Users) -> None:
     api = logged_in(app, admin_engine, users.ana, "ana")
     r = api.get("/api/auth/eu")
     assert r.status_code == 200
@@ -105,9 +103,7 @@ def test_sem_sessao_rotas_protegidas_respondem_401(app: FastAPI) -> None:
     assert api.get("/api/auth/eu").status_code == 401
 
 
-def test_sair_invalida_a_sessao_no_servidor(
-    app: FastAPI, admin_engine: Engine, users: Users
-) -> None:
+def test_sair_invalida_a_sessao_no_servidor(app: FastAPI, admin_engine: Engine, users: Users) -> None:
     api = logged_in(app, admin_engine, users.ana, "ana")
     token = api.client.cookies.get("fin_sessao")
     assert token
@@ -118,9 +114,7 @@ def test_sair_invalida_a_sessao_no_servidor(
     assert replay.get("/api/auth/eu").status_code == 401
 
 
-def test_sair_de_um_usuario_nao_afeta_os_outros(
-    app: FastAPI, admin_engine: Engine, users: Users
-) -> None:
+def test_sair_de_um_usuario_nao_afeta_os_outros(app: FastAPI, admin_engine: Engine, users: Users) -> None:
     ana = logged_in(app, admin_engine, users.ana, "ana")
     bruno = logged_in(app, admin_engine, users.bruno, "bruno")
     carla = logged_in(app, admin_engine, users.carla, "carla")
@@ -129,9 +123,7 @@ def test_sair_de_um_usuario_nao_afeta_os_outros(
     assert carla.get("/api/auth/eu").json()["usuario"] == "carla"
 
 
-def test_sessao_expira_por_inatividade_e_por_prazo(
-    app: FastAPI, admin_engine: Engine, users: Users
-) -> None:
+def test_sessao_expira_por_inatividade_e_por_prazo(app: FastAPI, admin_engine: Engine, users: Users) -> None:
     api = logged_in(app, admin_engine, users.ana, "ana")
     with admin_engine.begin() as conn:
         conn.execute(text("UPDATE sessions SET last_seen_at = now() - interval '31 minutes'"))
@@ -145,9 +137,7 @@ def test_sessao_expira_por_inatividade_e_por_prazo(
     assert api.get("/api/auth/eu").status_code == 401
 
 
-def test_sessao_manter_conectado_dura_mais(
-    app: FastAPI, admin_engine: Engine, users: Users
-) -> None:
+def test_sessao_manter_conectado_dura_mais(app: FastAPI, admin_engine: Engine, users: Users) -> None:
     set_password(admin_engine, users.ana)
     api = Api(app)
     api.login("ana", remember=True)
@@ -183,9 +173,7 @@ def test_troca_de_senha(app: FastAPI, admin_engine: Engine, users: Users) -> Non
     assert r.status_code == 400
     assert r.json()["campos"] == {"senha_atual": "Senha incorreta."}
 
-    r = api.post(
-        "/api/auth/trocar-senha", {"senha_atual": PASSWORD, "nova_senha": "curta"}, key=None
-    )
+    r = api.post("/api/auth/trocar-senha", {"senha_atual": PASSWORD, "nova_senha": "curta"}, key=None)
     assert r.status_code == 400
     assert "10 caracteres" in r.json()["detail"]
 

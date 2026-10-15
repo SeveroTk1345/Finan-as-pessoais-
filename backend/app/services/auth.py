@@ -51,16 +51,11 @@ def login(
             text("SELECT * FROM auth_recent_failures(:u, :ip, :w)"),
             {"u": username, "ip": ip, "w": settings.login_window_seconds},
         ).one()
-    if (
-        by_user >= settings.login_max_failures_per_user
-        or by_ip >= settings.login_max_failures_per_ip
-    ):
+    if by_user >= settings.login_max_failures_per_user or by_ip >= settings.login_max_failures_per_ip:
         raise LoginBlockedError
 
     with engine.begin() as conn:
-        row = conn.execute(
-            text("SELECT * FROM auth_login_lookup(:u)"), {"u": username}
-        ).one_or_none()
+        row = conn.execute(text("SELECT * FROM auth_login_lookup(:u)"), {"u": username}).one_or_none()
     ok = verify_password(row.password_hash if row else None, password)
     ok = ok and row is not None and bool(row.is_active)
 
@@ -104,9 +99,7 @@ def logout(engine: Engine, user_id: UUID, token_hash: bytes) -> None:
         conn.execute(text("DELETE FROM sessions WHERE token_hash = :h"), {"h": token_hash})
 
 
-def change_password(
-    engine: Engine, user_id: UUID, token_hash: bytes, *, current: str, new: str
-) -> None:
+def change_password(engine: Engine, user_id: UUID, token_hash: bytes, *, current: str, new: str) -> None:
     """Troca a senha e encerra as outras sessões do mesmo usuário (as dos outros
     usuários não são afetadas)."""
     with user_transaction(engine, user_id) as conn:

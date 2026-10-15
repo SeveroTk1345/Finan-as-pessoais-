@@ -123,16 +123,12 @@ def test_repositorio_recusa_conexao_de_outro_usuario(app_engine: Engine, users: 
 # --- somente RLS (sem filtro da aplicação) ---------------------------------------
 
 
-def test_rls_filtra_sql_sem_where(
-    app_engine: Engine, users: Users, seeded: dict[str, Account]
-) -> None:
+def test_rls_filtra_sql_sem_where(app_engine: Engine, users: Users, seeded: dict[str, Account]) -> None:
     for name in ["ana", "bruno", "carla"]:
         uid = _uid(users, name)
         with user_transaction(app_engine, uid) as conn:
             rows = conn.execute(text("SELECT id, owner_id FROM accounts")).all()
-            total = conn.execute(
-                text("SELECT count(*), sum(initial_balance_cents) FROM accounts")
-            ).one()
+            total = conn.execute(text("SELECT count(*), sum(initial_balance_cents) FROM accounts")).one()
         assert [r.id for r in rows] == [seeded[name].id]
         # Agregações também só enxergam as próprias linhas.
         assert total[0] == 1
@@ -205,9 +201,7 @@ def test_tabela_users_mostra_so_o_proprio_usuario(app_engine: Engine, users: Use
         assert rows == [uid]
 
 
-def test_papel_da_aplicacao_nao_cria_usuarios_nem_altera_esquema(
-    app_engine: Engine, users: Users
-) -> None:
+def test_papel_da_aplicacao_nao_cria_usuarios_nem_altera_esquema(app_engine: Engine, users: Users) -> None:
     forbidden = [
         "INSERT INTO users (username, display_name, password_hash) VALUES ('intruso','X','!')",
         "UPDATE users SET username='x'",
@@ -341,9 +335,7 @@ def test_relacao_com_registro_de_outro_usuario_e_recusada_pelo_banco(
         )
 
 
-def test_relacao_dentro_do_mesmo_dono_funciona(
-    app_engine: Engine, users: Users, probe_tables: None
-) -> None:
+def test_relacao_dentro_do_mesmo_dono_funciona(app_engine: Engine, users: Users, probe_tables: None) -> None:
     with user_transaction(app_engine, users.carla) as conn:
         parent = conn.execute(
             text("INSERT INTO probe.parent (owner_id) VALUES (:o) RETURNING id"),

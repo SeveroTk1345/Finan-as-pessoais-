@@ -41,9 +41,7 @@ def run_idempotent(
     status_code: int = 201,
 ) -> JSONResponse:
     if key is None or not KEY_PATTERN.match(key):
-        raise ApiError(
-            400, "Falta a identificação da operação. Recarregue a página e tente de novo."
-        )
+        raise ApiError(400, "Falta a identificação da operação. Recarregue a página e tente de novo.")
 
     inserted = conn.execute(
         text(
@@ -62,9 +60,7 @@ def run_idempotent(
             {"o": owner_id, "k": key},
         ).one()
         if row.fingerprint != fp:
-            raise ApiError(
-                409, "Esta operação já foi enviada com outros dados. Recarregue a página."
-            )
+            raise ApiError(409, "Esta operação já foi enviada com outros dados. Recarregue a página.")
         if row.status_code is None:
             raise ApiError(409, "Esta operação ainda está sendo processada. Aguarde.")
         response = JSONResponse(row.response_body, status_code=row.status_code)
@@ -73,10 +69,7 @@ def run_idempotent(
 
     body = jsonable_encoder(action())
     conn.execute(
-        text(
-            "UPDATE idempotency_keys SET status_code = :s, response_body = CAST(:b AS jsonb) "
-            "WHERE id = :i"
-        ),
+        text("UPDATE idempotency_keys SET status_code = :s, response_body = CAST(:b AS jsonb) WHERE id = :i"),
         {"s": status_code, "b": json.dumps(body), "i": inserted},
     )
     return JSONResponse(body, status_code=status_code)

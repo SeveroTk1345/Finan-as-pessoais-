@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from fastapi import FastAPI
 
+from app.api import core_routes
+
 
 def register_routes(app: FastAPI) -> None:
-    # Módulos financeiros são adicionados aqui conforme são implementados.
-    _ = app
+    app.include_router(core_routes.router, prefix="/api")

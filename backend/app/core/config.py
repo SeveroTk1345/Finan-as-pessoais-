@@ -46,9 +46,7 @@ class Settings(BaseSettings):
 
     @property
     def origins(self) -> frozenset[str]:
-        return frozenset(
-            o.strip().rstrip("/") for o in self.allowed_origins.split(",") if o.strip()
-        )
+        return frozenset(o.strip().rstrip("/") for o in self.allowed_origins.split(",") if o.strip())
 
     @property
     def cookie_secure(self) -> bool:
