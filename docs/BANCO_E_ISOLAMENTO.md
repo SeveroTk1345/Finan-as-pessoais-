@@ -43,6 +43,13 @@ Cada proteção foi desligada de propósito e a suíte foi executada (resultados
 | `ENABLE ROW LEVEL SECURITY` | 23 |
 | Limpeza de identidade no pool | 1 |
 | Identidade com escopo de sessão + sem limpeza no pool | 4 |
+| Exigência de digital/rosto confirmados no login por passkey | 2 |
+| Conferência do identificador do usuário na passkey | 1 |
+
+## Digital ou rosto (passkeys)
+* `passkeys` é uma tabela com dono como as outras (RLS, chave composta); cada pessoa lista e remove só as próprias.
+* `webauthn_challenges` não tem `owner_id` nem política: `fin_app` **nem tem permissão** de leitura (testado). A API só chega lá por quatro funções `SECURITY DEFINER` com `search_path` fixo: criar desafio, consumir desafio (apaga e devolve numa só operação), localizar a credencial pelo identificador e registrar o uso. Mesmo padrão do login por senha (migração 0002).
+* O desafio de cadastro guarda quem o pediu; outra pessoa não consegue usá-lo para prender uma credencial na conta alheia (testado).
 
 ## Limites conhecidos
 * A RLS protege contra **erros de programação** (consulta sem filtro). Ela **não** protege contra injeção de SQL arbitrário, porque qualquer sessão pode mudar `app.user_id`. A defesa contra injeção é o uso exclusivo de consultas parametrizadas (SQLAlchemy) e a revisão de segurança.

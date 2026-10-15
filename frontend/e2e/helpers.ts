@@ -16,7 +16,7 @@ export async function login(page: Page, user: keyof typeof USERS): Promise<void>
   await ready(page);
   await page.getByLabel("Usuário").fill(user);
   await page.getByLabel("Senha").fill(USERS[user]);
-  await page.getByRole("button", { name: "Entrar" }).click();
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await page.waitForURL(/\/$/);
   await ready(page);
   await expect(page.getByText("Conectado como")).toBeVisible();

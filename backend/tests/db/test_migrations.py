@@ -12,7 +12,7 @@ from sqlalchemy import Engine, create_engine, text
 
 from tests.db.conftest import BACKEND_DIR, DbInfo
 
-HEAD = "0003"
+HEAD = "0004"
 
 
 @pytest.fixture

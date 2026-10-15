@@ -116,6 +116,19 @@ Qualquer decisão M3 pode ser revista pelo Diogo. Mudar uma decisão financeira 
 | T-IDEM | Toda criação financeira aceita `Idempotency-Key`; repetição devolve o resultado original | Técnica |
 | T-CSRF | Métodos que alteram dados exigem `Origin` igual ao do app e o cabeçalho `X-Requested-With` | Técnica |
 | T-SPA | O FastAPI serve o site estático e a API na mesma origem; em produção, o Caddy faz HTTPS na frente | Técnica |
+| T-HORA | Horários de sessão vêm só do relógio do banco (`now()`), o mesmo usado para conferir validade. O relógio da aplicação (São Paulo) fica para as datas financeiras | Técnica (defeito encontrado: sessão "expirava" ao nascer quando os relógios divergiam) |
+
+### Entrar com digital ou rosto (M4)
+| ID | Decisão | Origem |
+|---|---|---|
+| A-DIG-1 | Passkeys (WebAuthn). O aparelho confirma a digital, o rosto ou o PIN dele e assina um desafio; o servidor guarda só a chave pública. Nenhum dado biométrico sai do aparelho | M4 |
+| A-DIG-2 | A senha continua: é o primeiro acesso em cada aparelho e a reserva se o sensor falhar ou o aparelho for trocado. Remover a senha deixaria a conta inacessível ao perder o celular | Opção mais segura |
+| A-DIG-3 | Só o sensor do próprio aparelho (`platform`), credencial guardada nele (`residentKey: required`) e verificação do usuário obrigatória (`userVerification: required`). Sem QR code nem chave física, para não confundir | M4 + simplicidade (M2) |
+| A-DIG-4 | Entrar não pede o usuário: o aparelho oferece as credenciais que tem. O servidor não revela quem tem digital ativada (`allowCredentials` vazio) | Privacidade |
+| A-DIG-5 | Desafio aleatório de uso único, válido por 5 minutos, apagado ao ser usado mesmo se a verificação falhar. Origem conferida; identificador do usuário conferido; contador que volta é recusado (indício de cópia) | Segurança |
+| A-DIG-6 | Falhas contam no mesmo limite por endereço do login com senha (20 em 15 minutos), sem bloquear a senha de nenhuma pessoa em particular | Segurança |
+| A-DIG-7 | "Manter conectado neste aparelho" vale também para a digital. Sem a opção, a sessão é curta, mas entrar de novo é só tocar no sensor | Opção mais segura |
+| A-DIG-8 | A credencial fica presa ao domínio do app. **Se o domínio mudar, cada pessoa precisa ativar de novo** (a senha continua funcionando) | Limitação do padrão |
 
 ## 4. Pendências que dependem do Diogo
 | ID | O que falta | Bloqueia |

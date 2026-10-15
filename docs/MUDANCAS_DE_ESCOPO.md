@@ -64,3 +64,13 @@ Principais pontos:
 | C11 | M2: no máximo seis áreas na navegação | M3: oito áreas sugeridas | Computador: barra lateral com as oito áreas. Celular: barra inferior com cinco itens (Início, Lançamentos, A pagar, Investimentos, Mais); as demais ficam em "Mais" com botões grandes e rótulos. Assim o celular respeita o limite de M2 |
 | C12 | Revisão 2.1: parcelamento de fatura como lançamento do próprio cartão, com a dívida só para consulta | M3 item 5.8: transferir a obrigação para a estrutura de dívida | As duas coisas: a renegociação cria uma **dívida** (visível e acompanhada no módulo de dívidas) e a fatura recebe o crédito do valor renegociado. As parcelas do acordo são cobradas nas faturas futuras do cartão, que é como os bancos fazem, e a dívida mostra quanto falta a partir dessas parcelas. Não existe pagamento direto da dívida nesse caso, então nada é contado duas vezes. Ver F-CARTAO-6 |
 | C13 | P2: restauração individual | M3: exportação dos próprios dados | Exportação individual (JSON e CSV). Restauração só do banco inteiro, pelo administrador. Ver P2 |
+
+## M4 · Entrar com digital ou rosto (15/10/2026)
+
+Origem: pedido do Diogo para não precisar digitar senha. A alternativa "app só no celular, sem servidor e sem login" foi discutida e descartada pelo próprio Diogo, porque as pessoas também vão usar o computador, e dados em mais de um aparelho exigem servidor com identificação.
+
+| Antes | Agora |
+|---|---|
+| Entrada só com usuário e senha | Entrada com digital, rosto ou PIN do aparelho (passkeys, padrão WebAuthn), ativada por pessoa e por aparelho. A senha continua existindo para o primeiro acesso em cada aparelho e como reserva |
+
+Decisões A-DIG-1 a A-DIG-8 em `DECISOES.md`.

@@ -12,13 +12,23 @@ Este guia é para as três pessoas que vão usar o aplicativo. Linguagem simples
 
 No computador, basta abrir o endereço no navegador.
 
-## 2. Trocar a senha
+## 2. Entrar com a digital ou o rosto
+
+Depois de entrar com usuário e senha pela primeira vez, você pode ativar a digital ou o rosto **neste aparelho**:
+
+1. No **Início**, toque em **Ativar** no aviso "Entrar sem digitar a senha" (ou vá em **Mais → Perfil e segurança**).
+2. Toque em **Ativar neste aparelho** e confirme com a digital, o rosto ou o código do celular.
+3. Da próxima vez, na tela de entrada, toque em **Entrar com digital ou rosto**. Não precisa digitar nada.
+
+Faça isso em cada aparelho seu (celular e computador). Se trocar de celular, entre com a senha no novo e ative de novo. Para desativar um aparelho, use **Remover** em Perfil e segurança.
+
+## 3. Trocar a senha
 
 Em **Mais → Perfil e segurança**, informe a senha atual e a nova (pelo menos 10 caracteres; uma frase fácil de lembrar funciona bem). Ao trocar, outros aparelhos conectados na sua conta são desconectados.
 
 Esqueceu a senha? Peça para quem administra o aplicativo criar uma nova. Ninguém consegue ver a sua senha.
 
-## 3. As telas
+## 4. As telas
 
 | Tela | Para que serve |
 |---|---|
@@ -28,7 +38,7 @@ Esqueceu a senha? Peça para quem administra o aplicativo criar uma nova. Ningu�
 | **Investir** | Seus investimentos |
 | **Mais** | Contas bancárias, cartões, dívidas, metas, relatórios, categorias, senha, exportação e ajuda |
 
-## 4. Tarefas do dia a dia
+## 5. Tarefas do dia a dia
 
 **Registrar uma despesa:** Início → **+ Registrar despesa** → valor (digite só os números: `4590` vira R$ 45,90) → descrição → **Salvar**. Aparece "✓ Despesa salva." quando deu certo.
 
@@ -52,7 +62,7 @@ Esqueceu a senha? Peça para quem administra o aplicativo criar uma nova. Ningu�
 
 **Antes de uma compra grande:** Mais → **Posso comprar?**. Informe o valor e se vai pagar à vista ou no cartão. O app mostra como fica o dinheiro nos próximos 6 meses, com e sem a compra. Nada é registrado.
 
-## 5. O que significa cada número
+## 6. O que significa cada número
 
 * **Dinheiro disponível:** o que está nas contas do dia a dia. Não inclui limite do cartão nem investimentos.
 * **Já está comprometido:** contas, faturas e parcelas que vencem até o seu próximo recebimento.
@@ -62,7 +72,7 @@ Esqueceu a senha? Peça para quem administra o aplicativo criar uma nova. Ningu�
 
 Mais explicações em **Mais → Ajuda**.
 
-## 6. Cuidados
+## 7. Cuidados
 
 * Em aparelho compartilhado, toque em **Sair** ao terminar e não marque "Manter conectado".
 * Sem internet, o aplicativo avisa no alto da tela e não deixa salvar. Nada fica salvo pela metade.

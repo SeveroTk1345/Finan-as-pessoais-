@@ -3,12 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import timedelta
 from uuid import UUID
 
 from sqlalchemy import Engine, text
 
-from app.core.clock import Clock
 from app.core.config import Settings
 from app.core.security import (
     hash_password,
@@ -38,7 +36,6 @@ class NewSession:
 def login(
     engine: Engine,
     settings: Settings,
-    clock: Clock,
     *,
     username: str,
     password: str,
@@ -66,7 +63,15 @@ def login(
         )
     if not ok or row is None:
         raise InvalidCredentialsError
+    return create_session(engine, settings, row.user_id, remember=remember)
 
+
+def create_session(engine: Engine, settings: Settings, user_id: UUID, *, remember: bool) -> NewSession:
+    """Cria a sessão no banco (só o hash do token) para quem já provou quem é.
+
+    Os horários vêm do relógio do banco (now()), o mesmo que auth_session_user usa
+    para conferir validade e inatividade: uma só fonte de hora para sessões.
+    """
     if remember:
         max_s, idle_s = (
             settings.session_remember_max_seconds,
@@ -75,23 +80,22 @@ def login(
     else:
         max_s, idle_s = settings.session_short_max_seconds, settings.session_short_idle_seconds
     token = new_session_token()
-    now = clock.now_utc()
-    with user_transaction(engine, row.user_id) as conn:
+    with user_transaction(engine, user_id) as conn:
         conn.execute(
             text(
                 "INSERT INTO sessions (owner_id, token_hash, remember, created_at, last_seen_at, "
-                "expires_at, idle_timeout_seconds) VALUES (:o, :h, :r, :n, :n, :e, :i)"
+                "expires_at, idle_timeout_seconds) "
+                "VALUES (:o, :h, :r, now(), now(), now() + make_interval(secs => :m), :i)"
             ),
             {
-                "o": row.user_id,
+                "o": user_id,
                 "h": hash_token(token),
                 "r": remember,
-                "n": now,
-                "e": now + timedelta(seconds=max_s),
+                "m": max_s,
                 "i": idle_s,
             },
         )
-    return NewSession(token=token, user_id=row.user_id, max_age_seconds=max_s if remember else None)
+    return NewSession(token=token, user_id=user_id, max_age_seconds=max_s if remember else None)
 
 
 def logout(engine: Engine, user_id: UUID, token_hash: bytes) -> None:

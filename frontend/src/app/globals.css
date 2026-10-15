@@ -199,6 +199,8 @@ a.list-row:hover { background: var(--surface); }
 .btn:hover { background: #2b2b2b; }
 .btn.secondary { background: var(--white); color: var(--black); }
 .btn.secondary:hover { background: var(--surface); }
+.divider-text { display: flex; align-items: center; gap: 12px; margin: 4px 0 0; }
+.divider-text::before, .divider-text::after { content: ""; flex: 1; border-top: 1px solid var(--line); }
 .btn.ghost { background: transparent; border-color: transparent; color: var(--text); text-decoration: underline; padding: 0 10px; }
 .btn.danger { background: var(--white); color: var(--neg); border-color: var(--neg); }
 .btn.block { width: 100%; }

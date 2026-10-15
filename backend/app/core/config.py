@@ -40,6 +40,13 @@ class Settings(BaseSettings):
     login_max_failures_per_user: int = 5
     login_max_failures_per_ip: int = 20
 
+    # Entrar com digital ou rosto (passkeys). Sem rp_id definido, usa o domínio da
+    # origem da requisição (já validada pela proteção CSRF). Precisa ser um nome de
+    # domínio ("localhost" vale; um IP como 127.0.0.1 não).
+    webauthn_rp_id: str | None = None
+    webauthn_rp_name: str = "Finanças"
+    webauthn_challenge_seconds: int = 5 * 60
+
     @property
     def is_production(self) -> bool:
         return self.environment == "production"

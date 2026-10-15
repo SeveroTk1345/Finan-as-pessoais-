@@ -319,3 +319,32 @@ def test_cli_redefinir_senha_encerra_sessoes_so_do_usuario(
     assert ana.get("/api/auth/eu").status_code == 401
     assert bruno.get("/api/auth/eu").status_code == 200
     assert Api(app).login("ana", "senha-redefinida-1").status_code == 200
+
+
+@pytest.mark.parametrize("year", [2001, 2099])
+def test_sessao_usa_o_relogio_do_banco_mesmo_com_relogio_da_aplicacao_defasado(
+    app_engine: Engine, admin_engine: Engine, users: Users, year: int
+) -> None:
+    # Regressão: a sessão nascia com a hora da aplicação e era conferida com a hora
+    # do banco; com relógios diferentes, ela "expirava" ao nascer (ou durava demais).
+    from datetime import UTC, datetime
+
+    from app.core.clock import FixedClock
+    from app.core.config import Settings
+    from app.main import create_app
+
+    with admin_engine.begin() as conn:
+        conn.execute(text("DELETE FROM login_attempts"))
+    skewed = create_app(
+        Settings(environment="test", allowed_origins=ORIGIN),
+        engine=app_engine,
+        clock=FixedClock(datetime(year, 1, 1, 12, tzinfo=UTC)),
+    )
+    api = logged_in(skewed, admin_engine, users.ana, "ana")
+    assert api.get("/api/auth/eu").status_code == 200
+    with admin_engine.connect() as conn:
+        row = conn.execute(
+            text("SELECT expires_at - now() AS left, now() - created_at AS age FROM sessions")
+        ).one()
+    assert 11 * 3600 < row.left.total_seconds() <= 12 * 3600
+    assert row.age.total_seconds() < 60

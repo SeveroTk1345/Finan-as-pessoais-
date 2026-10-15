@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 
+import { BiometricOffer } from "@/components/BiometricOffer";
 import { useShell } from "@/components/Shell";
 import { Badge, DateText, ErrorBox, Loading, Money, Notice, Stat } from "@/components/ui";
 import { shortMonthLabel } from "@/lib/dates";
@@ -66,6 +67,8 @@ export default function HomePage() {
           <Stat size="md" label="Dinheiro livre estimado" cents={h.free_cents} signed help={h.explanations.free} />
         </div>
       </section>
+
+      <BiometricOffer userId={me.id} />
 
       <div className="actions" aria-label="Ações rápidas">
         <Link className="btn" href="/lancamentos/novo/?tipo=despesa">+ Registrar despesa</Link>

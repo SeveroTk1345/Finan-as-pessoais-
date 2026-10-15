@@ -42,10 +42,10 @@ Todas as do item 1, em três camadas: regras financeiras puras (unitários e pro
 Ambiente: container Linux, PostgreSQL 16 em Docker, Chromium com perfil de iPhone. **Não é o Safari real**; a validação no aparelho físico está pendente.
 
 ## 4. Banco de dados e migrações
-PostgreSQL 16, migrações Alembic 0001 a 0003, 20 tabelas. Valores em centavos inteiros, datas civis. Testes de ida e volta das migrações e de convenções no catálogo (toda tabela com dono tem `owner_id`, chave composta e RLS forçada). Detalhes em `MODELO_DE_DADOS.md`.
+PostgreSQL 16, migrações Alembic 0001 a 0004, 22 tabelas. Valores em centavos inteiros, datas civis. Testes de ida e volta das migrações e de convenções no catálogo (toda tabela com dono tem `owner_id`, chave composta e RLS forçada). Detalhes em `MODELO_DE_DADOS.md`.
 
 ## 5. Autenticação e isolamento
-Três usuários independentes, sem conta administradora que veja finanças alheias. A identidade vem só da sessão validada; o backend ignora qualquer `owner_id` enviado. Isolamento em duas camadas: filtro na aplicação e Row-Level Security forçada, com o papel `fin_app` sem superusuário e sem BYPASSRLS. Identidade definida por transação e limpa a cada retirada do pool. Testado com as 6 combinações de acesso cruzado em todas as rotas, pela API e pela tela (404 sem vazar conteúdo). Ver `BANCO_E_ISOLAMENTO.md`.
+Três usuários independentes, sem conta administradora que veja finanças alheias. Entrada com usuário e senha ou, depois de ativar no aparelho, com digital ou rosto (passkeys; o servidor guarda só a chave pública). A identidade vem só da sessão validada; o backend ignora qualquer `owner_id` enviado. Isolamento em duas camadas: filtro na aplicação e Row-Level Security forçada, com o papel `fin_app` sem superusuário e sem BYPASSRLS. Identidade definida por transação e limpa a cada retirada do pool. Testado com as 6 combinações de acesso cruzado em todas as rotas, pela API e pela tela (404 sem vazar conteúdo). Ver `BANCO_E_ISOLAMENTO.md`.
 
 ## 6. Backups e restauração
 Serviço de backup no Compose: cópia diária com `pg_dump`, rotação, permissão 600 e SHA-256. Restauração testada em banco separado (teste automatizado, Compose real e dados criados pela interface), com conteúdo idêntico. **Pendente:** cópia fora do servidor e cifrada, cujo destino depende de decisão do Diogo (D9). Ver `BACKUP.md`.

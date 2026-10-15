@@ -16,7 +16,7 @@ export default defineConfig({
   timeout: 60_000,
   reporter: [["list"]],
   use: {
-    baseURL: process.env.FIN_E2E_URL ?? "http://127.0.0.1:8765",
+    baseURL: process.env.FIN_E2E_URL ?? "http://localhost:8765",
     locale: "pt-BR",
     timezoneId: "America/Sao_Paulo",
     trace: "retain-on-failure",

@@ -22,6 +22,7 @@ Cada fato financeiro é registrado uma vez, na tabela que é a sua origem. Telas
 |---|---|
 | `users` | Três usuários; senha em hash Argon2 |
 | `sessions`, `login_attempts`, `idempotency_keys` | Sessões, limite de tentativas e repetição segura de operações |
+| `passkeys`, `webauthn_challenges` | Chave pública de cada aparelho com digital ou rosto ativado; desafios de uso único (acessíveis só por funções de login) |
 | `accounts` | Contas (saldo inicial + data, marcação "dia a dia") |
 | `categories` | Categorias de receita e despesa |
 | `transactions` | Livro razão: `kind` ∈ receita, despesa, transferencia, ajuste, pagamento_fatura, pagamento_divida, entrada_emprestimo, reembolso, investimento; `status` ativo/cancelado |

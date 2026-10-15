@@ -9,6 +9,13 @@
 - [ ] O app abre pelo ícone sem a barra do Safari, respeitando o entalhe e a barra inferior
 - [ ] Pede login pelo ícone na primeira vez (comportamento esperado do iOS)
 
+## Digital ou rosto (Face ID / Touch ID)
+- [ ] Em Perfil e segurança, "Ativar neste aparelho" abre o Face ID ou Touch ID e o aparelho aparece na lista
+- [ ] O convite "Entrar sem digitar a senha" do Início some depois de ativar
+- [ ] Depois de "Sair", "Entrar com digital ou rosto" entra sem digitar nada, **também pelo ícone da Tela de Início**
+- [ ] Cancelar o Face ID mostra "Cancelado ou o tempo acabou" e a senha continua funcionando
+- [ ] "Remover" o aparelho faz o botão de digital deixar de funcionar nele
+
 ## Uso
 - [ ] Campo de valor abre o teclado numérico; "4590" vira R$ 45,90
 - [ ] Campo de data abre o seletor do iOS; abaixo aparece "Data escolhida: DD/MM/AAAA"

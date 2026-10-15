@@ -121,3 +121,28 @@ Ambiente: container Linux desta sessão; PostgreSQL 16.10 em Docker; Python 3.13
 * Teste com usuários reais (ver `ACESSIBILIDADE.md`).
 * Publicação em provedor de nuvem e certificado Let's Encrypt real.
 * Integração contínua no GitHub (o arquivo existe; a execução depende do GitHub).
+
+## M4 · Entrar com digital ou rosto · 15/10/2026
+
+| Verificação | Resultado |
+|---|---|
+| `pytest` (backend, banco real) | **377 aprovados**, 0 falhas (18 novos de passkeys + 2 de regressão do relógio) |
+| `ruff`, `ruff format`, `mypy --strict` | Sem problemas |
+| `vitest` em 3 fusos | **52 aprovados** em cada fuso |
+| `eslint`, `tsc` | Sem problemas |
+| Playwright (`scripts/e2e.sh`) | **19 aprovados** (ativar pelo convite do Início, sair e entrar só com a digital; sem sensor, só usuário e senha) |
+| Backup e restauração (cenário 14) | Conteúdo idêntico |
+| `pip-audit` (inclui `webauthn` 3.0.1, `cryptography` 50.0.2, `pyOpenSSL` 26.4.0, `cbor2` 6.1.5) | Nenhuma vulnerabilidade conhecida |
+| `npm audit --omit=dev` | 0 vulnerabilidades |
+
+Os testes de API usam um autenticador em software (`tests/db/soft_authenticator.py`) que gera chaves P-256 e assina os desafios como um celular. Cobrem: fluxo completo; banco só com chave pública; recusa sem verificação do usuário (cadastro e login); desafio de uso único; desafio expirado; origem falsa; contador que volta; identificador de outra pessoa; credencial malformada (401, não 500); aparelho removido; usuário desativado; isolamento entre pessoas, inclusive desafio de cadastro alheio; bloqueio por tentativas; aplicação sem acesso direto aos desafios; proteção CSRF.
+
+Mutações: sem exigir a verificação do usuário, 2 testes falham; sem conferir o identificador do usuário, 1 falha.
+
+O ponta a ponta usa o autenticador virtual do Chromium (protocolo DevTools). **Não substitui o Face ID real**: está no roteiro de `VALIDACAO_IPHONE.md`.
+
+### Defeitos encontrados e corrigidos
+1. **Bomba-relógio nos testes:** a sessão nascia com a hora da aplicação (relógio fixo dos testes, 15:00 UTC) e era conferida com a hora do banco. Depois das 15:30 reais, 73 testes falhavam com "Sua sessão terminou". Correção na aplicação, não no teste: a sessão usa só o relógio do banco (T-HORA). Novo teste com o relógio da aplicação em 2001 e 2099; com a hora defasada simulada, ele falha.
+2. Credencial malformada gerava erro 500: agora toda exceção da biblioteca WebAuthn vira 401.
+3. Com o sensor ativo, o teste de login por senha encontrava dois botões "Entrar": o seletor do teste passou a exigir o nome exato.
+4. Endereço dos testes ponta a ponta trocado de `127.0.0.1` para `localhost`: o WebAuthn não aceita IP como domínio.

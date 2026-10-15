@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Annotated
+from typing import Annotated, Any
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request, Response
 from pydantic import BaseModel, ConfigDict, Field
@@ -11,16 +12,15 @@ from app.api.deps import (
     CurrentUser,
     client_ip,
     current_user,
-    get_clock,
     get_engine,
     get_settings_dep,
 )
-from app.api.errors import ApiError
-from app.core.clock import Clock
+from app.api.errors import ApiError, not_found
 from app.core.config import Settings
 from app.core.security import WeakPasswordError
 from app.db.identity import user_transaction
 from app.services import auth as auth_service
+from app.services import passkeys
 
 router = APIRouter(prefix="/auth", tags=["autenticação"])
 
@@ -59,13 +59,11 @@ def entrar(
     response: Response,
     engine: Annotated[Engine, Depends(get_engine)],
     settings: Annotated[Settings, Depends(get_settings_dep)],
-    clock: Annotated[Clock, Depends(get_clock)],
 ) -> MeOut:
     try:
         session = auth_service.login(
             engine,
             settings,
-            clock,
             username=payload.usuario,
             password=payload.senha,
             remember=payload.manter_conectado,
@@ -77,6 +75,11 @@ def entrar(
         # Mesma mensagem para usuário inexistente e senha errada.
         raise ApiError(401, "Usuário ou senha incorretos.") from exc
 
+    _set_session_cookie(response, settings, session)
+    return _me(engine, CurrentUser(id=session.user_id, token_hash=b""))
+
+
+def _set_session_cookie(response: Response, settings: Settings, session: auth_service.NewSession) -> None:
     response.set_cookie(
         SESSION_COOKIE,
         session.token,
@@ -86,7 +89,6 @@ def entrar(
         samesite="strict",
         path="/api",
     )
-    return _me(engine, CurrentUser(id=session.user_id, token_hash=b""))
 
 
 @router.post("/sair", status_code=204)
@@ -127,3 +129,129 @@ def trocar_senha(
     except WeakPasswordError as exc:
         raise ApiError(400, str(exc), {"nova_senha": str(exc)}) from exc
     return Response(status_code=204)
+
+
+# ---------- Entrar com digital ou rosto (passkeys) ----------
+# Os POST abaixo só chegam aqui com Origin permitida (proteção CSRF no middleware);
+# essa mesma origem define o domínio ao qual a credencial fica presa.
+
+
+class ChallengeOut(BaseModel):
+    desafio_id: str
+    opcoes: dict[str, Any]
+
+
+class PasskeyRegisterIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    desafio_id: UUID
+    credencial: dict[str, Any]
+    nome_aparelho: str = Field(min_length=1, max_length=60)
+
+
+class PasskeyLoginIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    desafio_id: UUID
+    credencial: dict[str, Any]
+    manter_conectado: bool = False
+
+
+class PasskeyOut(BaseModel):
+    id: str
+    nome: str
+    criada_em: str
+    usada_em: str | None
+
+
+def _origin(request: Request) -> str:
+    return (request.headers.get("origin") or "").rstrip("/")
+
+
+@router.get("/digital", response_model=list[PasskeyOut])
+def digital_listar(
+    engine: Annotated[Engine, Depends(get_engine)],
+    user: Annotated[CurrentUser, Depends(current_user)],
+) -> list[dict[str, Any]]:
+    return passkeys.list_passkeys(engine, user.id)
+
+
+@router.post("/digital/cadastro/opcoes", response_model=ChallengeOut)
+def digital_cadastro_opcoes(
+    request: Request,
+    engine: Annotated[Engine, Depends(get_engine)],
+    settings: Annotated[Settings, Depends(get_settings_dep)],
+    user: Annotated[CurrentUser, Depends(current_user)],
+) -> ChallengeOut:
+    ch = passkeys.registration_options(engine, settings, user.id, _origin(request))
+    return ChallengeOut(desafio_id=str(ch.id), opcoes=ch.options)
+
+
+@router.post("/digital/cadastro", response_model=PasskeyOut, status_code=201)
+def digital_cadastro(
+    payload: PasskeyRegisterIn,
+    request: Request,
+    engine: Annotated[Engine, Depends(get_engine)],
+    settings: Annotated[Settings, Depends(get_settings_dep)],
+    user: Annotated[CurrentUser, Depends(current_user)],
+) -> dict[str, Any]:
+    try:
+        return passkeys.register(
+            engine,
+            settings,
+            user.id,
+            _origin(request),
+            challenge_id=payload.desafio_id,
+            credential=payload.credencial,
+            device_name=payload.nome_aparelho,
+        )
+    except passkeys.PasskeyError as exc:
+        raise ApiError(400, str(exc)) from exc
+
+
+@router.delete("/digital/{passkey_id}", status_code=204)
+def digital_remover(
+    passkey_id: UUID,
+    engine: Annotated[Engine, Depends(get_engine)],
+    user: Annotated[CurrentUser, Depends(current_user)],
+) -> Response:
+    if not passkeys.remove(engine, user.id, passkey_id):
+        raise not_found("Aparelho")
+    return Response(status_code=204)
+
+
+@router.post("/digital/entrar/opcoes", response_model=ChallengeOut)
+def digital_entrar_opcoes(
+    request: Request,
+    engine: Annotated[Engine, Depends(get_engine)],
+    settings: Annotated[Settings, Depends(get_settings_dep)],
+) -> ChallengeOut:
+    try:
+        ch = passkeys.login_options(engine, settings, _origin(request), client_ip(request))
+    except auth_service.LoginBlockedError as exc:
+        raise ApiError(429, "Muitas tentativas erradas. Espere 15 minutos e tente de novo.") from exc
+    return ChallengeOut(desafio_id=str(ch.id), opcoes=ch.options)
+
+
+@router.post("/digital/entrar", response_model=MeOut)
+def digital_entrar(
+    payload: PasskeyLoginIn,
+    request: Request,
+    response: Response,
+    engine: Annotated[Engine, Depends(get_engine)],
+    settings: Annotated[Settings, Depends(get_settings_dep)],
+) -> MeOut:
+    try:
+        session = passkeys.login(
+            engine,
+            settings,
+            _origin(request),
+            client_ip(request),
+            challenge_id=payload.desafio_id,
+            credential=payload.credencial,
+            remember=payload.manter_conectado,
+        )
+    except auth_service.LoginBlockedError as exc:
+        raise ApiError(429, "Muitas tentativas erradas. Espere 15 minutos e tente de novo.") from exc
+    except passkeys.PasskeyError as exc:
+        raise ApiError(401, str(exc)) from exc
+    _set_session_cookie(response, settings, session)
+    return _me(engine, CurrentUser(id=session.user_id, token_hash=b""))

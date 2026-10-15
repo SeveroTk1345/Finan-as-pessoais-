@@ -54,4 +54,5 @@ until curl -fs "http://127.0.0.1:${PORT}/api/health" > /dev/null 2>&1; do
 done
 
 cd "$ROOT"
-FIN_E2E_URL="http://127.0.0.1:${PORT}" FIN_E2E_DB_CONTAINER="$NAME" "$@"
+# localhost (e não 127.0.0.1): o WebAuthn não aceita IP como domínio.
+FIN_E2E_URL="http://localhost:${PORT}" FIN_E2E_DB_CONTAINER="$NAME" "$@"
