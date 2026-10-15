@@ -50,6 +50,8 @@ Esqueceu a senha? Peça para quem administra o aplicativo criar uma nova. Ningu�
 
 **Meta (ex.: reserva de emergência):** Mais → Planejamento → **+ Nova meta**.
 
+**Antes de uma compra grande:** Mais → **Posso comprar?**. Informe o valor e se vai pagar à vista ou no cartão. O app mostra como fica o dinheiro nos próximos 6 meses, com e sem a compra. Nada é registrado.
+
 ## 5. O que significa cada número
 
 * **Dinheiro disponível:** o que está nas contas do dia a dia. Não inclui limite do cartão nem investimentos.

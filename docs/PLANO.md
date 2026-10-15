@@ -13,10 +13,10 @@ Situação: ✅ concluída e testada · ⏳ pendente · ⛔ depende de ação ex
 | 5 | Contas, receitas e despesas | ✅ | `test_core_api.py`, ponta a ponta 1–3 |
 | 6 | Contas a pagar, cartões, faturas, dívidas | ✅ | `test_core_api.py`, `test_cards_debts_api.py`, ponta a ponta 4–6 |
 | 7 | Investimentos | ✅ | `test_planning_api.py`, ponta a ponta 7–8 |
-| 8 | Metas, planejamento e relatórios | ✅ | `test_planning_api.py`, ponta a ponta 9 |
-| 9 | Interface completa e responsiva | ✅ | 33 telas; ponta a ponta 12 e rótulos |
+| 8 | Metas, planejamento e relatórios | ✅ | `test_planning_api.py`, `test_simulator_api.py`, ponta a ponta 9 e 9b |
+| 9 | Interface completa e responsiva | ✅ | 34 telas; ponta a ponta 12 e rótulos |
 | 10 | PWA, segurança, backup e restauração | ✅ | Service worker, cabeçalhos, `test_backup_restore.py`, cenário 14 |
-| 11 | Testes integrados e ponta a ponta | ✅ | 351 + 41×3 + 16 testes (`REGISTRO_TESTES.md`) |
+| 11 | Testes integrados e ponta a ponta | ✅ | 357 + 41×3 + 17 testes (`REGISTRO_TESTES.md`) |
 | 12 | Implantação e documentação | ✅ preparada / ⛔ publicação | Dockerfile, Compose com Caddy testado localmente; publicação exige conta do Diogo |
 
 ## Pendências
@@ -27,5 +27,4 @@ Situação: ✅ concluída e testada · ⏳ pendente · ⛔ depende de ação ex
 | Validar no iPhone físico | ⏳ após publicação |
 | Teste com usuários representativos | ⏳ |
 | Importação de CSV de extratos | ⏳ (especificação original 4.11) |
-| Simulador "Posso comprar?" | ⏳ (especificação original 4.9) |
 | Revisão do Codex | ⏳ |

@@ -19,9 +19,10 @@ Atualizado em 15/10/2026.
 | Dívidas | Saldo ancorado, pagamentos com/sem juros, encargos, quitação, renegociação, entrada de empréstimo, 4 estratégias | Domínio + API + ponta a ponta |
 | Investimentos | Renda fixa, variável e outros, aportes, retiradas, rendimentos, preço médio, valores informados, ganho estimado, TIR | Domínio + API + ponta a ponta |
 | Metas | Contribuições, progresso, projeção com premissas | Domínio + API + ponta a ponta |
+| Posso comprar? | Simula compra à vista ou no cartão: saldo previsto mês a mês com e sem a compra, efeito no limite, reserva de emergência, comprar agora × não comprar × esperar. Não grava nada | API (6 testes, incluindo isolamento e "nada é gravado") + ponta a ponta 9b |
 | Início e relatórios | Resumo com definições explicadas, relatório mensal, evolução de 12 meses | API + ponta a ponta |
 | Exportação | JSON completo e CSV de lançamentos, só do próprio usuário | API |
-| Interface | 33 telas, preto e branco, acessível, celular e computador | Ponta a ponta (16 testes), tela pequena, rótulos |
+| Interface | 34 telas, preto e branco, acessível, celular e computador | Ponta a ponta (17 testes), tela pequena, rótulos |
 | PWA | Manifesto, ícones iOS, service worker só da estrutura, aviso de versão | Build; uso offline nos testes ponta a ponta |
 | Backup | Diário com rotação, SHA-256, restauração em banco novo | 12 testes + Compose real + restauração dos dados da interface |
 | Implantação | Dockerfile, Compose com Caddy (HTTPS), migração separada, guia | Compose de produção local por HTTPS |
@@ -34,7 +35,6 @@ Atualizado em 15/10/2026.
 | Validação no iPhone físico | Exige publicação; roteiro pronto em `VALIDACAO_IPHONE.md` |
 | Teste com usuários representativos | Não é possível neste ambiente (`ACESSIBILIDADE.md`) |
 | Importação de CSV de extratos | Não implementada nesta versão (prevista na especificação original, item 4.11) |
-| Simulador "Posso comprar?" | Não implementado nesta versão (especificação original, item 4.9); o Início mostra o dinheiro livre |
 | Revisão independente pelo Codex | Repositório disponível para isso |
 
 ## Limitações conhecidas
@@ -42,4 +42,5 @@ Atualizado em 15/10/2026.
 * Valores de investimentos dependem de atualização manual.
 * Pagamento parcial de fatura: juros do rotativo são lançados pela pessoa na fatura seguinte (F-CARTAO-5).
 * Ajuste de vencimento para dia útil não é feito (F-CARTAO-3).
+* O "Posso comprar?" trabalha por mês e só enxerga o que está cadastrado: gastos do dia a dia não registrados não entram (F-SIM-2).
 * A CSP permite scripts inline (exigência do site estático do Next.js).

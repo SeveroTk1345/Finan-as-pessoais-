@@ -14,6 +14,10 @@ export default function PlanningPage() {
     <div className="stack-lg">
       <PageHeader title="Planejamento" subtitle="Seus objetivos e quanto falta para chegar lá."
         action={<Link className="btn" href="/planejamento/nova/">+ Nova meta</Link>} />
+      <Link href="/planejamento/posso-comprar/" className="card card-link stack">
+        <h2>Posso comprar?</h2>
+        <p className="muted">Simule uma compra à vista ou parcelada e veja como ficam os próximos meses.</p>
+      </Link>
       {goals.data.length === 0 ? (
         <Empty title="Nenhuma meta ainda" action={<Link className="btn" href="/planejamento/nova/">Criar meta</Link>}>
           Crie uma meta como reserva de emergência, viagem ou troca de carro. Você registra quanto guardou e o app mostra o progresso.

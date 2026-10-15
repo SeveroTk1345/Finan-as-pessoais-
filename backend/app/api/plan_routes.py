@@ -16,7 +16,7 @@ from app.api.core_routes import Cents, Note, Strict
 from app.api.errors import ApiError
 from app.api.service import Svc
 from app.domain.dates import YearMonth
-from app.services import export, goals, investments, reports
+from app.services import export, goals, investments, reports, simulator
 
 router = APIRouter()
 
@@ -239,3 +239,21 @@ def export_csv(svc: Svc) -> Response:
         media_type="text/csv; charset=utf-8",
         headers={"Content-Disposition": 'attachment; filename="financas-lancamentos.csv"'},
     )
+
+
+# --- Posso comprar? -------------------------------------------------------------------
+
+
+class SimulationIn(Strict):
+    amount_cents: Cents
+    method: Literal["conta", "cartao"] = "conta"
+    card_id: UUID | None = None
+    installments_count: Annotated[int, Field(ge=1, le=72)] = 1
+    purchase_date: date | None = None
+    months: Annotated[int, Field(ge=1, le=24)] = 6
+
+
+@router.post("/simulador/compra")
+def simulate_purchase(payload: SimulationIn, svc: Svc) -> dict[str, Any]:
+    """Só leitura: nada é gravado."""
+    return svc.run(lambda c: simulator.simulate_purchase(c, payload.model_dump()))

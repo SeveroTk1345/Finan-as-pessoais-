@@ -11,7 +11,7 @@ Aplicativo de controle financeiro pessoal para **três pessoas**, cada uma com d
 * **Cartões:** compras parceladas, faturas, pagamento integral ou parcial, limite, estornos, cancelamentos, renegociação de fatura, sem dupla contagem.
 * **Dívidas:** saldo, parcelas, pagamentos, renegociação, comparação de estratégias.
 * **Investimentos:** renda fixa, variável e outros, aportes, retiradas, rendimentos, preço médio, ganho estimado e rentabilidade (TIR).
-* **Planejamento e relatórios:** metas com projeção e premissas, gastos por categoria, evolução mensal.
+* **Planejamento e relatórios:** metas com projeção e premissas, simulador "Posso comprar?", gastos por categoria, evolução mensal.
 * **Exportação** dos próprios dados (CSV e JSON) e **backup** automático do servidor.
 
 ## Arquitetura

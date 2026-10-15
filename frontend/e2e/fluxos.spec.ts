@@ -170,6 +170,19 @@ test("9. consulta relatórios e metas", async () => {
   await expect(gastei).toContainText("R$ 1.323,45");
 });
 
+test("9b. simula uma compra em \"Posso comprar?\" sem registrar nada", async () => {
+  const before = await accountBalance("Conta Corrente");
+  await open(page, "/planejamento/");
+  await page.getByRole("link", { name: /Posso comprar\?/ }).click();
+  await page.waitForURL(/posso-comprar/);
+  await money(page, "Valor da compra", 99999999);
+  await page.getByRole("button", { name: "Simular" }).click();
+  const result = page.getByRole("region", { name: "Resultado da simulação" });
+  await expect(result.getByText("Atenção", { exact: true })).toBeVisible();
+  await expect(result.getByRole("table")).toContainText("Falta");
+  expect(await accountBalance("Conta Corrente")).toBe(before);
+});
+
 test("10. não acessa dados de outra pessoa", async ({ browser }) => {
   await open(page, "/contas/");
   await page.getByRole("link", { name: /Conta Corrente/ }).click();

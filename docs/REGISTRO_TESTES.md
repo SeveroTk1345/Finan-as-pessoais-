@@ -70,14 +70,15 @@ Ambiente: container Linux desta sessão; PostgreSQL 16.10 em Docker; Python 3.13
 
 | Verificação | Resultado |
 |---|---|
-| `pytest` (backend, banco real) | **351 aprovados**, 0 falhas |
-| `ruff check`, `ruff format --check`, `mypy --strict` | Sem problemas (72 arquivos) |
+| `pytest` (backend, banco real) | **357 aprovados**, 0 falhas |
+| `ruff check`, `ruff format --check`, `mypy --strict` | Sem problemas (78 arquivos) |
 | `vitest` (frontend) em 3 fusos | **41 aprovados** em cada fuso |
 | `eslint --max-warnings=0`, `tsc --noEmit` | Sem problemas |
-| `next build` (export estático) | 33 telas geradas |
-| Playwright (`scripts/e2e.sh`) | **16 aprovados**, 0 falhas |
+| `next build` (export estático) | 34 telas geradas |
+| Playwright (`scripts/e2e.sh`) | **17 aprovados**, 0 falhas (inclui 9b, "Posso comprar?") |
 | Backup + restauração dos dados criados pela interface (cenário 14) | Conteúdo idêntico (contas, lançamentos com soma, parcelas, dívidas, investimentos, metas, usuários) |
 | `pip-audit` | Nenhuma vulnerabilidade conhecida |
+| GitHub Actions (`.github/workflows/ci.yml`: backend com PostgreSQL, frontend, ponta a ponta, imagem Docker) | Execução 38674544887 sobre o commit d7ce0e5: **sucesso** (3 min 25 s) |
 | `npm audit --omit=dev` | 0 vulnerabilidades |
 | `docker build` da imagem de produção | Construída |
 | `docker compose up` de produção com `FIN_DOMAIN=localhost` | HTTPS/HTTP2, HSTS, CSP, cookie Secure/HttpOnly/SameSite=Strict, CSRF 403 de outra origem, docs desligadas, só 80/443 publicadas, dados e sessão mantidos após `down` + `up` |
