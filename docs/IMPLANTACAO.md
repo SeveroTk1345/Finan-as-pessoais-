@@ -33,6 +33,20 @@ O Caddy obtém o certificado sozinho; ele só precisa de um nome que aponte para
 
 Coloque o nome em `FIN_DOMAIN` no `.env`.
 
+## Caminho rápido: Oracle Cloud + DuckDNS (escolha do Diogo)
+
+1. **Oracle Cloud:** crie a conta "Always Free" (região São Paulo). Não faça upgrade para "Pay As You Go".
+2. **VM:** Compute → Instances → Create. Imagem **Ubuntu 24.04**; formato **VM.Standard.A1.Flex** (Ampere, gratuito) com 2 OCPUs e 12 GB. Se aparecer "Out of capacity", tente outro "Availability domain" ou mais tarde. Em "Add SSH keys", escolha **Generate a key pair** e baixe a chave privada.
+3. **Portas na Oracle:** na rede da VM (Virtual Cloud Network → Security List), adicione regras de entrada TCP para **80** e **443** de `0.0.0.0/0`.
+4. **DuckDNS:** entre em duckdns.org, crie o subdomínio e coloque o **IP público** da VM.
+5. **Instalação:** conecte por SSH e rode:
+   ```bash
+   curl -fsSL https://raw.githubusercontent.com/SeveroTk1345/Finan-as-pessoais-/desenvolvimento/scripts/instalar-servidor.sh -o instalar.sh
+   bash instalar.sh SEU-NOME.duckdns.org
+   ```
+   O script instala o Docker, libera 80 e 443 no firewall interno da VM (as imagens Ubuntu da Oracle bloqueiam por padrão), baixa o projeto, gera o `.env` com senhas aleatórias, confere se o domínio aponta para a VM e sobe tudo. Pode ser rodado de novo sem estragar nada.
+6. Siga do passo 7 abaixo (criar as contas).
+
 ## Passo a passo na VM
 
 1. Crie a VM (Ubuntu 24.04 ou equivalente) na camada gratuita. Libere **só** as portas 80 e 443 no firewall do provedor (e a 22 para SSH, de preferência só do seu IP).
@@ -42,7 +56,8 @@ Coloque o nome em `FIN_DOMAIN` no `.env`.
    ```bash
    cd deploy
    cp ../.env.example .env
-   nano .env   # troque FIN_DOMAIN e TODAS as senhas (openssl rand -base64 24)
+   nano .env   # troque FIN_DOMAIN e TODAS as senhas (openssl rand -hex 24: só letras e números;
+               # base64 gera / + = e quebra o endereço do banco)
    chmod 600 .env
    ```
 5. Suba: `docker compose up -d --build`
