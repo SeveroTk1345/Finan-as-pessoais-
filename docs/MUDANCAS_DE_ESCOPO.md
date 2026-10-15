@@ -81,3 +81,7 @@ Origem: pedidos do Diogo: gastos continuam manuais, mas escolhendo "com o que fo
 
 Ideias registradas para depois, sem implementação: importação de extratos OFX/CSV em vez de Open Finance; analisador de compras (à vista × parcelado), em tela separada.
 
+## M6 · Plano do mês (15/10/2026)
+
+Origem: pedido do Diogo para mostrar como a pessoa pode dividir o dinheiro: quanto vai para as contas, quanto investir, quanto gastar, e quanto o investimento renderia com o tempo. As letras usadas no pedido (S, P, K) eram só exemplo; a tela usa "Contas do mês", "Para investir" e "Livre para gastar". Decisões F-PLANO-1 a 6.
+

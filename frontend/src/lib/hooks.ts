@@ -106,3 +106,13 @@ export function useSubmit() {
 
   return { ...s, run, setError: (error: string | null) => setS((v) => ({ ...v, error })) };
 }
+
+/** Valor que só muda depois de `ms` sem alterações (evita uma consulta por tecla). */
+export function useDebounced<T>(value: T, ms = 500): T {
+  const [settled, setSettled] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setSettled(value), ms);
+    return () => clearTimeout(t);
+  }, [value, ms]);
+  return settled;
+}

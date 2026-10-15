@@ -98,6 +98,16 @@ Qualquer decisão M3 pode ser revista pelo Diogo. Mudar uma decisão financeira 
 | F-PARC-2 | O que falta pagar dos carnês entra em "Quanto devo" | M5 |
 | F-PARC-3 | "Cancelar as parcelas que faltam" cancela as não pagas (e o restante de uma parcial); o que foi pago continua registrado | Opção mais segura |
 
+### Plano do mês (M6)
+| ID | Decisão | Origem |
+|---|---|---|
+| F-PLANO-1 | Renda sugerida: soma das receitas que se repetem cadastradas, convertidas para um mês (semanal × 52 ÷ 12, anual ÷ 12); sem elas, média das receitas dos 3 meses completos anteriores. A pessoa pode trocar o valor | M6 |
+| F-PLANO-2 | Contas do mês: tudo o que vence no mês atual, pago ou não: contas a pagar (inclusive repetidas e parcelas de carnê), faturas de cartão do mês e a parcela de cada dívida ativa | M6 |
+| F-PLANO-3 | Sugestão de investimento: 20% da renda (referência da regra 50/30/20), sem passar do que sobra depois das contas. Livre para gastar = renda − contas − investimento; a soma das três partes é sempre a renda (testado com propriedades) | M6 + opção mais segura |
+| F-PLANO-4 | Projeção: depósito no fim de cada mês; rendimento **só** com a taxa informada pela pessoa, convertida para taxa mensal equivalente, mesma convenção das metas (F-META-1). Sem taxa, mostra só a soma. Não considera impostos nem inflação, e a tela diz isso | Não inventar rendimentos |
+| F-PLANO-5 | Avisos: contas acima da renda, contas acima da metade da renda, investimento que deixa o "livre" negativo. Dica de começar pela reserva de emergência | M6 |
+| F-PLANO-6 | É sugestão, não regra: a tela só lê dados e nada é gravado (testado) | Opção mais segura |
+
 ### Simulador "Posso comprar?"
 | ID | Decisão | Origem |
 |---|---|---|

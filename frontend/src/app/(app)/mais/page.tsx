@@ -11,6 +11,7 @@ const GROUPS = [
       { href: "/cartoes/", label: "Cartões de crédito", help: "Faturas, limite e compras parceladas" },
       { href: "/dividas/", label: "Dívidas e parcelas", help: "Empréstimos, financiamentos e renegociações" },
       { href: "/planejamento/", label: "Planejamento", help: "Metas e objetivos" },
+      { href: "/planejamento/plano/", label: "Plano do mês", help: "Dividir a renda entre contas, investimento e gastos" },
       { href: "/planejamento/posso-comprar/", label: "Posso comprar?", help: "Simular uma compra antes de fazer" },
       { href: "/relatorios/", label: "Relatórios", help: "Gastos por categoria e evolução mensal" },
     ],

@@ -62,6 +62,8 @@ Esqueceu a senha? Peça para quem administra o aplicativo criar uma nova. Ningu�
 
 **Investimento:** Investir → **+ Novo investimento**. Para atualizar o valor, abra o investimento → **Atualizar saldo**. O aplicativo não busca cotações sozinho.
 
+**Plano do mês:** Mais → **Plano do mês** (ou Planejamento). Mostra quanto da sua renda vai para as contas do mês, uma sugestão de quanto investir e quanto fica livre para gastar. Você pode mudar a renda e o valor a investir. Informando quanto o seu investimento rende ao ano, ele mostra quanto você teria em 1, 5, 10 e 20 anos. É uma estimativa: rendimento não é garantido.
+
 **Meta (ex.: reserva de emergência):** Mais → Planejamento → **+ Nova meta**.
 
 **Antes de uma compra grande:** Mais → **Posso comprar?**. Informe o valor e se vai pagar à vista ou no cartão. O app mostra como fica o dinheiro nos próximos 6 meses, com e sem a compra. Nada é registrado.

@@ -162,7 +162,8 @@ a.list-row:hover { background: var(--surface); }
 .list-row .main { display: flex; flex-direction: column; min-width: 0; }
 .list-row .title { font-weight: 600; overflow-wrap: anywhere; }
 .list-row .sub { font-size: 0.9rem; color: var(--text-2); }
-.list-row .amount { font-weight: 650; text-align: right; }
+.list-row .amount { font-weight: 650; text-align: right; white-space: nowrap; }
+.data td.num, .data th.num, .nowrap { white-space: nowrap; }
 
 .badge {
   display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px;
@@ -286,3 +287,9 @@ details.more summary { cursor: pointer; min-height: var(--tap); display: flex; a
 @media print {
   .sidebar, .bottombar, .topbar, .btn { display: none !important; }
 }
+
+.split-bar { display: flex; height: 28px; border: 2px solid var(--black); border-radius: 8px; overflow: hidden; }
+.split-bar .seg { display: block; height: 100%; }
+.split-bar .bills { background: var(--black); }
+.split-bar .invest { background: repeating-linear-gradient(45deg, var(--black) 0 3px, var(--white) 3px 8px); }
+.split-bar .free { background: var(--white); }

@@ -75,3 +75,20 @@ test("R$ 1.000,00 no carnê em 10x vira 10 parcelas de R$ 100,00", async () => {
   await page.getByRole("button", { name: "Sim, cancelar as que faltam" }).click();
   await flash(page, "10 parcelas canceladas.");
 });
+
+test("plano do mês divide a renda e projeta o investimento", async () => {
+  await open(page, "/planejamento/");
+  await page.getByRole("link", { name: /Plano do mês/ }).click();
+  await page.waitForURL(/planejamento\/plano/);
+  await money(page, "Quanto você recebe por mês", 300000);
+  // Contas do mês: a faculdade (R$ 119,90); o carnê cancelado não conta.
+  await expect(page.getByRole("heading", { name: "Como dividir R$ 3.000,00" })).toBeVisible();
+  const result = page.getByRole("region", { name: /Como dividir/ });
+  await expect(result).toContainText("R$ 119,90");
+  await expect(result).toContainText("R$ 600,00"); // 20% da renda
+  await expect(result).toContainText("R$ 2.280,10"); // livre para gastar
+  await page.getByLabel("Quanto rende ao ano, em % (opcional)").fill("10");
+  const projection = page.getByRole("list", { name: "Projeção do investimento" });
+  await expect(projection).toContainText("Você colocou R$ 7.200,00"); // 12 x R$ 600,00 em 1 ano
+  await expect(page.getByText(/10% ao ano informado por você/)).toBeVisible();
+});

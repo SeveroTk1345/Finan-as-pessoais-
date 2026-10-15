@@ -16,7 +16,7 @@ from app.api.core_routes import Cents, Note, Strict
 from app.api.errors import ApiError
 from app.api.service import Svc
 from app.domain.dates import YearMonth
-from app.services import export, goals, investments, reports, simulator
+from app.services import budget, export, goals, investments, reports, simulator
 
 router = APIRouter()
 
@@ -251,6 +251,19 @@ class SimulationIn(Strict):
     installments_count: Annotated[int, Field(ge=1, le=72)] = 1
     purchase_date: date | None = None
     months: Annotated[int, Field(ge=1, le=24)] = 6
+
+
+@router.get("/plano-do-mes")
+def month_plan(
+    svc: Svc,
+    renda: Annotated[int | None, Query(ge=0, le=100_000_000_000_000)] = None,
+    investir: Annotated[int | None, Query(ge=0, le=100_000_000_000_000)] = None,
+    taxa: Annotated[Decimal | None, Query(ge=0, le=100, max_digits=5, decimal_places=2)] = None,
+) -> dict[str, Any]:
+    """Sugestão de divisão da renda e projeção do investimento mensal. Só leitura."""
+    return svc.run(
+        lambda c: budget.month_plan(c, income_cents=renda, invest_cents=investir, annual_rate=taxa)
+    )
 
 
 @router.post("/simulador/compra")

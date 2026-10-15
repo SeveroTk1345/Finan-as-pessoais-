@@ -162,3 +162,21 @@ Testes de API novos (`test_repeat_installments_api.py`): repetição paga hoje e
 1. Parcelar R$ 0,05 em 7x geraria parcelas de R$ 0,00 (o banco recusaria com erro genérico): agora a API explica "Valor pequeno demais para tantas parcelas".
 2. Dois erros nos próprios testes novos (data final da repetição semanal é inclusiva; chave de idempotência enviada no corpo), corrigidos nos testes.
 
+## M6 · Plano do mês · 15/10/2026
+
+| Verificação | Resultado |
+|---|---|
+| `pytest` (backend, banco real) | **403 aprovados**, 0 falhas |
+| `ruff`, `ruff format`, `mypy --strict` | Sem problemas |
+| `vitest` em 3 fusos | **56 aprovados** em cada fuso |
+| Playwright | **23 aprovados** (novo: renda informada, contas do mês, 20% para investir, livre para gastar e projeção com 10% ao ano) |
+| Backup e restauração | Conteúdo idêntico |
+
+Domínio (`tests/domain/test_plano_do_mes.py`): projeção sem rendimento é a soma; com 12% ao ano bate com a fórmula fechada (R$ 1.264,65 para R$ 100,00 por mês em 12 meses, tolerância de 2 centavos pelo arredondamento mensal); sugestão limitada ao que sobra; valor escolhido respeitado; propriedade: contas + investir + livre = renda.
+
+API (`test_month_plan_api.py`, 9 testes): sem dados pede a renda; divisão com contas a pagar, repetidas, fatura e parcela de dívida; média de 3 meses completos; valores da pessoa; avisos; dica da reserva; validação dos parâmetros; isolamento; nada é gravado. Mutações: sugestão de 25% em vez de 20% e renda mensal ignorada, ambas pegas (2 falhas cada).
+
+### Defeitos encontrados na revisão visual e corrigidos
+1. A tabela da projeção ficava cortada à direita no iPhone: virou lista "Em 1 ano / Você colocou".
+2. Valores "R$" quebravam de linha separados do número em listas e tabelas: valores não quebram mais linha.
+

@@ -61,3 +61,47 @@ def goal_progress(
     projected = add_months(today, months)
     on_track = None if target_date is None else projected <= target_date
     return GoalProgress(Money(acc), Money(missing), percent, months, projected, on_track, assumption)
+
+
+@dataclass(frozen=True, slots=True)
+class SavingsProjection:
+    months: int
+    deposited: Money  # só o que a pessoa colocou
+    estimated: Money  # com o rendimento informado (igual a deposited se não houver taxa)
+
+
+def savings_projection(monthly: Money, annual_rate_percent: Decimal | None, months: int) -> SavingsProjection:
+    """Depósito no fim de cada mês com rendimento composto mensal equivalente à taxa
+    anual informada. Mesma convenção (e arredondamento mensal) de ``goal_progress``."""
+    if months < 0 or monthly.cents < 0:
+        raise ValueError("meses e depósito não podem ser negativos")
+    rate = monthly_rate(annual_rate_percent, "anual") if annual_rate_percent else Decimal(0)
+    balance = Decimal(0)
+    for _ in range(months):
+        balance = (balance * (1 + rate)).quantize(Decimal(1), rounding=ROUND_HALF_UP)
+        balance += monthly.cents
+    return SavingsProjection(months, Money(monthly.cents * months), Money(int(balance)))
+
+
+@dataclass(frozen=True, slots=True)
+class BudgetSplit:
+    income: Money
+    bills: Money
+    invest: Money
+    free: Money  # pode ser negativo: as contas e o investimento passam da renda
+    invest_suggested: Money
+
+
+def suggest_split(
+    income: Money, bills: Money, invest: Money | None = None, invest_share_percent: int = 20
+) -> BudgetSplit:
+    """Divide a renda em contas, investimento e livre para gastar (só inteiros).
+
+    Sugestão de investimento: ``invest_share_percent`` da renda (referência da regra
+    50/30/20), sem passar do que sobra depois das contas. Se a pessoa informar outro
+    valor, ele é usado e o "livre" pode ficar negativo, o que a tela avisa.
+    """
+    left = income.cents - bills.cents
+    suggested = max(0, min(income.cents * invest_share_percent // 100, left))
+    chosen = suggested if invest is None else invest.cents
+    return BudgetSplit(income, bills, Money(chosen), Money(left - chosen), Money(suggested))

@@ -14,6 +14,10 @@ export default function PlanningPage() {
     <div className="stack-lg">
       <PageHeader title="Planejamento" subtitle="Seus objetivos e quanto falta para chegar lá."
         action={<Link className="btn" href="/planejamento/nova/">+ Nova meta</Link>} />
+      <Link href="/planejamento/plano/" className="card card-link stack">
+        <h2>Plano do mês</h2>
+        <p className="muted">Quanto vai para as contas, quanto investir e quanto fica livre para gastar. E quanto o investimento pode render.</p>
+      </Link>
       <Link href="/planejamento/posso-comprar/" className="card card-link stack">
         <h2>Posso comprar?</h2>
         <p className="muted">Simule uma compra à vista ou parcelada e veja como ficam os próximos meses.</p>
