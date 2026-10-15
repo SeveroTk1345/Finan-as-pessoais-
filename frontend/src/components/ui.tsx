@@ -349,14 +349,14 @@ export function Bars({ items, caption }: { items: { label: string; cents: number
   );
 }
 
-export function Progress({ percent, label }: { percent: number; label: string }) {
+export function Progress({ percent, label, caption }: { percent: number; label: string; caption?: string | null }) {
   const p = Math.max(0, Math.min(100, percent));
   return (
     <div>
       <div className="progress" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={p} aria-label={label}>
         <div style={{ width: `${p}%` }} />
       </div>
-      <p className="small muted" style={{ marginTop: 4 }}>{p}% concluído</p>
+      {caption === null ? null : <p className="small muted" style={{ marginTop: 4 }}>{caption ?? `${p}% concluído`}</p>}
     </div>
   );
 }

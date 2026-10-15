@@ -75,11 +75,15 @@ function NewTransaction() {
   const submit = useSubmit();
   useScrollToError(submit.error);
 
-  const [amount, setAmount] = useState<number | null>(null);
-  const [description, setDescription] = useState("");
+  // Vindo de um atalho do Início, o formulário já chega preenchido (a pessoa confere e salva).
+  const presetValue = params.get("valor");
+  const [amount, setAmount] = useState<number | null>(
+    presetValue && /^\d{1,15}$/.test(presetValue) ? Number(presetValue) : null,
+  );
+  const [description, setDescription] = useState(params.get("descricao") ?? "");
   const [accountId, setAccountId] = useState(params.get("conta") ?? "");
   const [toAccountId, setToAccountId] = useState("");
-  const [categoryId, setCategoryId] = useState("");
+  const [categoryId, setCategoryId] = useState(params.get("categoria") ?? "");
   const [date, setDate] = useState(todayInSaoPaulo());
   const [payMode, setPayMode] = useState<PayMode>("avista");
   const [cardId, setCardId] = useState("");

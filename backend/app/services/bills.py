@@ -513,6 +513,11 @@ def cancel_installment_plan(ctx: Ctx, group: UUID) -> dict[str, Any]:
     return {**installment_plan(ctx, group), "cancelled": len(open_bills)}
 
 
+def rule_bills(ctx: Ctx, rule_id: UUID) -> list[dict[str, Any]]:
+    """Ocorrências já gravadas de uma recorrência, com a situação calculada."""
+    return [_bill_view(ctx, row_dict(r)) for r in ctx.all(f"{BILL_SQL} AND b.rule_id = :r", r=rule_id)]
+
+
 def bill_title(bill: dict[str, Any]) -> str:
     """Descrição com o número da parcela, igual à tela: "Geladeira · parcela 3 de 10"."""
     if bill.get("installment_number"):

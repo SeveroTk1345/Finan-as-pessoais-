@@ -11,6 +11,7 @@ from typing import Any
 
 from app.domain.dates import YearMonth
 from app.domain.debts import DebtMovement, debt_balance
+from app.domain.insights import spend_per_day
 from app.domain.money import Money, format_brl
 from app.services import bills as bills_service
 from app.services import cards as cards_service
@@ -43,26 +44,36 @@ def accounts_balances(
     return {"total": int(total), "available": int(available)}
 
 
-def income_and_spending(ctx: Ctx, start: date, end: date) -> dict[str, Any]:
-    """Recebi e gastei no período, por categoria (cada gasto contado uma vez)."""
-    income: dict[str, int] = defaultdict(int)
-    spending: dict[str, int] = defaultdict(int)
+def category_flows(ctx: Ctx, start: date, end: date) -> dict[str, Any]:
+    """Receitas e gastos do período por categoria (chave: id da categoria; None = sem
+    categoria). Cada gasto contado uma vez: compras no cartão entram na data da compra,
+    estornos e reembolsos reduzem a categoria do gasto."""
+    income: dict[str | None, int] = defaultdict(int)
+    spending: dict[str | None, int] = defaultdict(int)
+    names: dict[str | None, str] = {None: "Sem categoria"}
+
+    def key(cid: Any, name: str | None) -> str | None:
+        k = str(cid) if cid is not None else None
+        names[k] = name or "Sem categoria"
+        return k
+
     for r in ctx.all(
-        """SELECT t.kind, coalesce(c.name, 'Sem categoria') AS cat, sum(t.amount_cents)::bigint AS v
+        """SELECT t.kind, t.category_id AS cid, c.name AS cat, sum(t.amount_cents)::bigint AS v
            FROM transactions t LEFT JOIN categories c ON c.id=t.category_id AND c.owner_id=t.owner_id
            WHERE t.owner_id=:o AND t.status='ativo' AND t.kind IN ('receita','despesa','reembolso')
-             AND t.tx_date BETWEEN :s AND :e GROUP BY 1, 2""",
+             AND t.tx_date BETWEEN :s AND :e GROUP BY 1, 2, 3""",
         s=start,
         e=end,
     ):
+        k = key(r.cid, r.cat)
         if r.kind == "receita":
-            income[r.cat] += r.v
+            income[k] += r.v
         elif r.kind == "despesa":
-            spending[r.cat] += r.v
+            spending[k] += r.v
         else:  # reembolso reduz a categoria do gasto
-            spending[r.cat] -= r.v
+            spending[k] -= r.v
     for r in ctx.all(
-        """SELECT coalesce(c.name, 'Sem categoria') AS cat, p.kind,
+        """SELECT p.category_id AS cid, c.name AS cat,
                   sum(CASE WHEN p.kind='parcelamento_fatura'
                            THEN p.total_cents - p.financed_principal_cents
                            ELSE p.total_cents END)::bigint AS v
@@ -73,20 +84,27 @@ def income_and_spending(ctx: Ctx, start: date, end: date) -> dict[str, Any]:
         e=end,
     ):
         if r.v:
-            spending[r.cat] += r.v
+            spending[key(r.cid, r.cat)] += r.v
     for r in ctx.all(
-        """SELECT coalesce(c.name, 'Sem categoria') AS cat, sum(k.amount_cents)::bigint AS v
+        """SELECT p.category_id AS cid, c.name AS cat, sum(k.amount_cents)::bigint AS v
            FROM card_credits k
            JOIN card_purchases p ON p.id=k.purchase_id AND p.owner_id=k.owner_id
            LEFT JOIN categories c ON c.id=p.category_id AND c.owner_id=p.owner_id
            WHERE k.owner_id=:o AND k.kind='estorno' AND p.status='ativa'
-             AND k.credit_date BETWEEN :s AND :e GROUP BY 1""",
+             AND k.credit_date BETWEEN :s AND :e GROUP BY 1, 2""",
         s=start,
         e=end,
     ):
-        spending[r.cat] -= r.v
-    inc = sorted(((k, v) for k, v in income.items() if v), key=lambda x: -x[1])
-    spe = sorted(((k, v) for k, v in spending.items() if v), key=lambda x: -x[1])
+        spending[key(r.cid, r.cat)] -= r.v
+    return {"income": dict(income), "spending": dict(spending), "names": names}
+
+
+def income_and_spending(ctx: Ctx, start: date, end: date) -> dict[str, Any]:
+    """Recebi e gastei no período, por nome de categoria."""
+    flows = category_flows(ctx, start, end)
+    names = flows["names"]
+    inc = sorted(((names[k], v) for k, v in flows["income"].items() if v), key=lambda x: -x[1])
+    spe = sorted(((names[k], v) for k, v in flows["spending"].items() if v), key=lambda x: -x[1])
     return {
         "income_cents": sum(v for _, v in inc),
         "spending_cents": sum(v for _, v in spe),
@@ -198,6 +216,9 @@ def home(ctx: Ctx) -> dict[str, Any]:
         if i["is_active"]
     )
     free = bal["available"] - committed
+    per_day = spend_per_day(free, ctx.today, max(next_income, ctx.today))
+    from app.services.insights import budget_alerts  # importação tardia: insights usa este módulo
+
     net_worth = bal["total"] + inv_value - debts["total"]
     overdue = [i for i in to_pay_month if i["overdue"]]
 
@@ -234,6 +255,9 @@ def home(ctx: Ctx) -> dict[str, Any]:
         "investments_value_cents": inv_value,
         "investments_missing_value": inv["totals"]["missing_value_count"],
         "net_worth_cents": net_worth,
+        "per_day_cents": per_day.per_day_cents,
+        "per_day_days": per_day.days,
+        "budget_alerts": budget_alerts(ctx),
         "upcoming": committed_items[:8],
         "overdue_count": len(overdue),
         "status": status,

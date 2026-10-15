@@ -45,10 +45,10 @@ export default function TransactionsPage() {
         <Link className="btn secondary" href="/lancamentos/novo/?tipo=transferencia">Transferir</Link>
       </div>
 
-      <div className="between" role="group" aria-label="Escolher o mês">
-        <button type="button" className="btn secondary" onClick={() => setMonth(shiftMonth(month, -1))} aria-label="Mês anterior">← Anterior</button>
+      <div className="month-nav" role="group" aria-label="Escolher o mês">
+        <button type="button" className="btn secondary" onClick={() => setMonth(shiftMonth(month, -1))} aria-label="Mês anterior"><span aria-hidden="true">←</span> <span className="nav-word">Anterior</span></button>
         <h2 aria-live="polite">{monthLabel(month)}</h2>
-        <button type="button" className="btn secondary" onClick={() => setMonth(shiftMonth(month, 1))} aria-label="Próximo mês">Próximo →</button>
+        <button type="button" className="btn secondary" onClick={() => setMonth(shiftMonth(month, 1))} aria-label="Próximo mês"><span className="nav-word">Próximo</span> <span aria-hidden="true">→</span></button>
       </div>
 
       <details className="card more">

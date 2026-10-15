@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { addDaysIso, addMonthsIso, daysBetween, monthBounds, monthLabel, shiftMonth, shortMonthLabel, todayInSaoPaulo } from "./dates";
+import { addDaysIso, addMonthsIso, weekdayIso, daysBetween, monthBounds, monthLabel, shiftMonth, shortMonthLabel, todayInSaoPaulo } from "./dates";
 
 describe(`datas (fuso do processo: ${process.env.TZ ?? "padrão"})`, () => {
   it("hoje em São Paulo independe do fuso do aparelho", () => {
@@ -49,3 +49,14 @@ describe("addMonthsIso", () => {
     expect(addMonthsIso("2026-10-15", 0)).toBe("2026-10-15");
   });
 });
+
+describe("weekdayIso", () => {
+  it("dias da semana conhecidos, inclusive antes de 1970 e em ano bissexto", () => {
+    expect(weekdayIso("2026-10-15")).toBe(4); // quinta
+    expect(weekdayIso("2026-10-18")).toBe(0); // domingo
+    expect(weekdayIso("2028-02-29")).toBe(2); // terça
+    expect(weekdayIso("1969-12-31")).toBe(3); // quarta
+    expect(weekdayIso("2000-01-01")).toBe(6); // sábado
+  });
+});
+

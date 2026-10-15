@@ -98,6 +98,18 @@ Qualquer decisão M3 pode ser revista pelo Diogo. Mudar uma decisão financeira 
 | F-PARC-2 | O que falta pagar dos carnês entra em "Quanto devo" | M5 |
 | F-PARC-3 | "Cancelar as parcelas que faltam" cancela as não pagas (e o restante de uma parcial); o que foi pago continua registrado | Opção mais segura |
 
+### Acompanhamento do dia a dia (M7, inspirado em Mobills, Organizze, PocketGuard, YNAB, Wallet, Money Lover e Monarch)
+| ID | Decisão | Origem |
+|---|---|---|
+| F-TETO-1 | Teto mensal por categoria de despesa. O gasto do mês usa a mesma regra dos relatórios (despesas, compras no cartão na data da compra, parcelas de carnê pagas, menos reembolsos e estornos); a função é compartilhada, então teto e relatório não podem divergir | M7 |
+| F-TETO-2 | "Perto do teto" a partir de 80%; "passou" acima de 100%. Aviso no Início e no resumo do mês | M7 |
+| F-TETO-3 | Sugestão de teto: mediana dos 6 meses completos anteriores (contando meses sem gasto), arredondada para cima de R$ 10,00 em R$ 10,00; só com pelo menos 3 meses com gasto. Mediana em vez de média para não se deixar levar por um mês fora do comum | M7 + opção mais segura |
+| F-DIA-1 | "Dá para gastar por dia" = dinheiro livre estimado (disponível menos o que vence até a próxima renda principal, F11) dividido pelos dias até essa renda, sem contar o dia em que ela entra; arredondado para baixo; zero quando não sobra | M7 + opção mais segura |
+| F-ATALHO-1 | Atalhos: despesas com a mesma descrição (sem diferenciar maiúsculas e espaços) e categoria, 2 vezes ou mais em 90 dias, em conta ativa, sem pagamento de conta. Até 4, os mais frequentes. Abrem o formulário preenchido com o último valor; nada é salvo sem a pessoa confirmar | M7 + opção mais segura |
+| F-CAL-1 | Calendário: contas a pagar e a receber do mês (pagas ou não, exceto canceladas), faturas pelo total do vencimento e próximas parcelas de dívidas | M7 |
+| F-RESUMO-1 | Resumo do mês em frases: recebeu, gastou, sobrou ou faltou, as 3 categorias com mais gasto, comparação com o mês anterior (só para meses completos), maior gasto do mês e, no mês atual, categorias acima do teto. No Início aparece o resumo do mês passado nos 10 primeiros dias | M7 |
+| F-ANUAL-1 | Contas que se repetem todo ano: quanto guardar por mês até o próximo vencimento ainda não pago (arredondado para cima) e o ritmo de um doze avos. É informação: não entra na divisão do plano do mês, porque no mês do vencimento a conta já está nas "contas do mês" | M7 |
+
 ### Plano do mês (M6)
 | ID | Decisão | Origem |
 |---|---|---|

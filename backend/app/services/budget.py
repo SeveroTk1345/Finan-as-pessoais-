@@ -25,6 +25,7 @@ from app.services import bills as bills_service
 from app.services import cards as cards_service
 from app.services import debts as debts_service
 from app.services import goals as goals_service
+from app.services import insights
 from app.services.base import Ctx
 
 INVEST_SHARE_PERCENT = 20
@@ -173,6 +174,7 @@ def month_plan(
         "invest_suggested_cents": split.invest_suggested.cents,
         "free_cents": split.free.cents,
         "projection": projection,
+        "annual": insights.annual_bills(ctx),
         "warnings": warnings,
         "tips": tips,
         "assumptions": assumptions,

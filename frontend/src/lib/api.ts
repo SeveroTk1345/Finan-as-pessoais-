@@ -88,6 +88,8 @@ export const api = {
   /** Alteração simples (sem criar registro financeiro). */
   post: <T>(path: string, body?: unknown) => request<T>("POST", path, body ?? {}),
   patch: <T>(path: string, body: unknown) => request<T>("PATCH", path, body),
+  /** Define um valor (repetir o pedido dá o mesmo resultado). */
+  put: <T>(path: string, body: unknown) => request<T>("PUT", path, body),
   delete: <T>(path: string) => request<T>("DELETE", path),
   /** Criação idempotente: a mesma chave em todas as tentativas da mesma operação. */
   create: <T>(path: string, body: unknown, key: string) =>

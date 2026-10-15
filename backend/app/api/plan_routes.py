@@ -16,7 +16,7 @@ from app.api.core_routes import Cents, Note, Strict
 from app.api.errors import ApiError
 from app.api.service import Svc
 from app.domain.dates import YearMonth
-from app.services import budget, export, goals, investments, reports, simulator
+from app.services import budget, export, goals, insights, investments, reports, simulator
 
 router = APIRouter()
 
@@ -251,6 +251,45 @@ class SimulationIn(Strict):
     installments_count: Annotated[int, Field(ge=1, le=72)] = 1
     purchase_date: date | None = None
     months: Annotated[int, Field(ge=1, le=24)] = 6
+
+
+class BudgetIn(Strict):
+    monthly_limit_cents: Cents
+
+
+@router.get("/tetos")
+def budgets_list(svc: Svc) -> dict[str, Any]:
+    return svc.run(insights.list_budgets)
+
+
+@router.put("/tetos/{category_id}")
+def budgets_set(category_id: UUID, payload: BudgetIn, svc: Svc) -> dict[str, Any]:
+    """Define ou troca o teto do mês da categoria (repetir o pedido não duplica)."""
+    return svc.run(lambda c: insights.set_budget(c, category_id, payload.monthly_limit_cents))
+
+
+@router.delete("/tetos/{category_id}", status_code=204)
+def budgets_delete(category_id: UUID, svc: Svc) -> Response:
+    svc.run(lambda c: insights.delete_budget(c, category_id))
+    return Response(status_code=204)
+
+
+@router.get("/atalhos")
+def shortcuts(svc: Svc) -> list[dict[str, Any]]:
+    """Gastos que se repetem, para registrar de novo com poucos toques."""
+    return svc.run(insights.frequent_expenses)
+
+
+@router.get("/calendario")
+def bills_calendar(svc: Svc, mes: str | None = None) -> dict[str, Any]:
+    month = _month(mes, svc.today)
+    return svc.run(lambda c: insights.calendar(c, month))
+
+
+@router.get("/relatorios/resumo")
+def report_summary(svc: Svc, mes: str | None = None) -> dict[str, Any]:
+    month = _month(mes, svc.today)
+    return svc.run(lambda c: insights.month_summary(c, month))
 
 
 @router.get("/plano-do-mes")

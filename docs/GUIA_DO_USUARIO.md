@@ -62,6 +62,18 @@ Esqueceu a senha? Peça para quem administra o aplicativo criar uma nova. Ningu�
 
 **Investimento:** Investir → **+ Novo investimento**. Para atualizar o valor, abra o investimento → **Atualizar saldo**. O aplicativo não busca cotações sozinho.
 
+**Teto de gastos:** Mais → **Teto de gastos**. Escolha uma categoria (ex.: Mercado), toque em **Definir teto** e informe quanto quer gastar no máximo por mês; quando houver histórico, o app sugere um valor. O Início avisa quando chegar perto (80%) e quando passar.
+
+**Quanto posso gastar por dia:** no Início, abaixo do dinheiro livre, aparece "Dá para gastar cerca de R$ X por dia até…", já descontando as contas que vencem até a próxima renda.
+
+**Gastos de sempre:** gastos que você repete (padaria, Uber, farmácia) aparecem como botões no Início. Um toque abre o formulário já preenchido; confira o valor e toque em **Salvar**.
+
+**Calendário de contas:** Contas a pagar → **Ver calendário** (ou Mais → Calendário de contas). Os dias com conta têm um ponto (vermelho se venceu); toque no dia para ver o que vence.
+
+**Contas de uma vez por ano:** cadastre IPVA, IPTU e seguro em Contas a pagar com **Repetir: Todo ano**. No Plano do mês aparece quanto separar por mês até o vencimento.
+
+**Resumo do mês:** em Relatórios, o mês aparece resumido em frases (quanto recebeu, gastou, onde mais gastou, comparação com o mês anterior). Nos primeiros dias do mês, o resumo do mês passado aparece no Início.
+
 **Plano do mês:** Mais → **Plano do mês** (ou Planejamento). Mostra quanto da sua renda vai para as contas do mês, uma sugestão de quanto investir e quanto fica livre para gastar. Você pode mudar a renda e o valor a investir. Informando quanto o seu investimento rende ao ano, ele mostra quanto você teria em 1, 5, 10 e 20 anos. É uma estimativa: rendimento não é garantido.
 
 **Meta (ex.: reserva de emergência):** Mais → Planejamento → **+ Nova meta**.

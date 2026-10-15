@@ -54,7 +54,12 @@ export default function BillsPage() {
   return (
     <div className="stack-lg">
       <PageHeader title="Contas a pagar" subtitle="Compromissos, vencimentos e o que você ainda vai receber."
-        action={<Link className="btn" href={`/a-pagar/nova/?tipo=${tab}`}>{tab === "pagar" ? "+ Nova conta a pagar" : "+ Nova receita prevista"}</Link>} />
+        action={
+          <div className="row">
+            <Link className="btn secondary" href="/a-pagar/calendario/">Ver calendário</Link>
+            <Link className="btn" href={`/a-pagar/nova/?tipo=${tab}`}>{tab === "pagar" ? "+ Nova conta a pagar" : "+ Nova receita prevista"}</Link>
+          </div>
+        } />
 
       <section className="card stack" aria-labelledby="prox">
         <h2 id="prox">Próximos 30 dias</h2>
@@ -97,10 +102,10 @@ export default function BillsPage() {
         <button role="tab" aria-selected={tab === "receber"} onClick={() => setTab("receber")}>A receber</button>
       </div>
 
-      <div className="between" role="group" aria-label="Escolher o mês">
-        <button type="button" className="btn secondary" onClick={() => setMonth(shiftMonth(month, -1))}>← Anterior</button>
+      <div className="month-nav" role="group" aria-label="Escolher o mês">
+        <button type="button" className="btn secondary" aria-label="Mês anterior" onClick={() => setMonth(shiftMonth(month, -1))}><span aria-hidden="true">←</span> <span className="nav-word">Anterior</span></button>
         <h2 aria-live="polite">{monthLabel(month)}</h2>
-        <button type="button" className="btn secondary" onClick={() => setMonth(shiftMonth(month, 1))}>Próximo →</button>
+        <button type="button" className="btn secondary" aria-label="Próximo mês" onClick={() => setMonth(shiftMonth(month, 1))}><span className="nav-word">Próximo</span> <span aria-hidden="true">→</span></button>
       </div>
 
       {bills.state === "loading" ? <Loading /> : bills.state === "error" ? (

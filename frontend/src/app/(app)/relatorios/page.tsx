@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Bars, ErrorBox, Loading, Money, PageHeader, Stat } from "@/components/ui";
 import { monthLabel, monthOf, shiftMonth, shortMonthLabel, todayInSaoPaulo } from "@/lib/dates";
 import { useApi } from "@/lib/hooks";
+import { MonthSummary } from "@/components/Insights";
 
 type Monthly = {
   month: string;
@@ -34,11 +35,14 @@ export default function ReportsPage() {
   return (
     <div className="stack-lg">
       <PageHeader title="Relatórios" subtitle="Para entender para onde vai o dinheiro." />
-      <div className="between" role="group" aria-label="Escolher o mês">
-        <button type="button" className="btn secondary" onClick={() => setMonth(shiftMonth(month, -1))}>← Anterior</button>
+      <div className="month-nav" role="group" aria-label="Escolher o mês">
+        <button type="button" className="btn secondary" aria-label="Mês anterior" onClick={() => setMonth(shiftMonth(month, -1))}><span aria-hidden="true">←</span> <span className="nav-word">Anterior</span></button>
         <h2 aria-live="polite">{monthLabel(month)}</h2>
-        <button type="button" className="btn secondary" onClick={() => setMonth(shiftMonth(month, 1))}>Próximo →</button>
+        <button type="button" className="btn secondary" aria-label="Próximo mês" onClick={() => setMonth(shiftMonth(month, 1))}><span className="nav-word">Próximo</span> <span aria-hidden="true">→</span></button>
       </div>
+      {month <= monthOf(todayInSaoPaulo()) ? (
+        <MonthSummary key={month} month={month} title={`Resumo de ${monthLabel(month).toLowerCase()}`} />
+      ) : null}
       {report.state === "loading" ? <Loading /> : report.state === "error" ? <ErrorBox message={report.message} onRetry={report.reload} /> : (
         <>
           <section className="card grid-2" aria-label="Resumo do mês">

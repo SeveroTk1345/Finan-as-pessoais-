@@ -85,3 +85,7 @@ Ideias registradas para depois, sem implementação: importação de extratos OF
 
 Origem: pedido do Diogo para mostrar como a pessoa pode dividir o dinheiro: quanto vai para as contas, quanto investir, quanto gastar, e quanto o investimento renderia com o tempo. As letras usadas no pedido (S, P, K) eram só exemplo; a tela usa "Contas do mês", "Para investir" e "Livre para gastar". Decisões F-PLANO-1 a 6.
 
+## M7 · Prioridade 1 das ideias dos melhores apps (15/10/2026)
+
+Origem: o Diogo pediu ideias dos melhores apps e aprovou a Prioridade 1 inteira: teto por categoria com aviso, "quanto posso gastar por dia", contas anuais divididas por mês, atalhos de gasto frequente, calendário de contas e resumo do mês em linguagem simples. Decisões F-TETO, F-DIA, F-ATALHO, F-CAL, F-RESUMO e F-ANUAL. Prioridade 2 (lembretes, marcadores, viagens, envelopes, sobra que passa de mês, foto do comprovante, assinaturas) fica registrada para depois.
+

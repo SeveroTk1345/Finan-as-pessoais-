@@ -31,6 +31,7 @@ Cada fato financeiro é registrado uma vez, na tabela que é a sua origem. Telas
 | `debts`, `debt_events` | Dívidas e encargos, descontos, baixa por renegociação |
 | `investments`, `investment_movements`, `investment_valuations` | Carteira, movimentos e valores informados |
 | `goals`, `goal_contributions` | Metas |
+| `category_budgets` | Teto mensal por categoria de despesa (migração 0006); o gasto é calculado na hora |
 | `audit_log` | Histórico de edições e cancelamentos |
 
 ## Restrições importantes no banco

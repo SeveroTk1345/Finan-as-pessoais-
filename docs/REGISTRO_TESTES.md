@@ -195,3 +195,24 @@ Capturas reais em 1440 × 900 de 14 telas, com dados fictícios. A largura do co
 2. "Receitas e despesas" quebrava em duas linhas no menu lateral: menu mais largo, sem quebra.
 3. Parcela de carnê aparecia como "Sofá (1/12)" num lugar e "Sofá · parcela 1 de 12" em outro: agora o texto é igual nos dois.
 
+## M7 · Prioridade 1 (teto, gasto por dia, atalhos, calendário, contas anuais, resumo) · 15/10/2026
+
+| Verificação | Resultado |
+|---|---|
+| `pytest` (backend, banco real) | **432 aprovados**, 0 falhas |
+| `ruff`, `ruff format`, `mypy --strict` | Sem problemas |
+| `vitest` em 3 fusos | **57 aprovados** em cada fuso (novo: dia da semana sem `Date`) |
+| Playwright | **30 aprovados** (6 novos: atalho preenche o formulário, gasto por dia, teto que passa e aviso no Início, calendário com a conta do dia, conta anual no plano, resumo em frases) |
+| Backup e restauração | Conteúdo idêntico |
+
+Domínio (`test_insights.py`, 18): limites de 80% e 100% do teto; mediana ímpar e par; sugestão que ignora mês fora do comum; arredondamento de R$ 10,00; sem base não sugere; propriedade da sugestão; gasto por dia (arredondamento, sem sobra, renda hoje); conta anual (meses até o vencimento, vencendo neste mês).
+
+API (`test_insights_api.py`, 11): teto com compra no cartão e reembolso, aviso no Início, troca e remoção, sugestão pela mediana, validações e isolamento; gasto por dia sem e com renda principal; atalhos (grafia diferente, antigos, cancelados e de uma vez só ficam de fora); calendário com conta, recorrência, fatura e parcela de dívida, cancelada fora; resumo de mês completo, parcial e futuro; contas anuais com ocorrência já paga. Mutações: atalho com 1 ocorrência e calendário com canceladas, ambas pegas.
+
+A função de gastos por categoria foi refatorada para agrupar pelo identificador da categoria (teto e relatório usam a mesma); os testes de relatórios continuaram aprovados antes de qualquer recurso novo.
+
+### Defeitos encontrados na revisão visual e corrigidos
+1. A barra do teto dizia "100% concluído" (texto das metas): a barra do teto não mostra mais esse texto.
+2. "← Anterior / Próximo →" quebrava em duas linhas no celular em Receitas e despesas, Contas a pagar, Relatórios e Calendário: navegação de mês numa linha só, com nome acessível nos botões.
+3. Contas anuais: "IPVA: R$ 1.200,00" quebrava mal e faltava espaço em "R$ 1.200,00.Vence".
+

@@ -99,3 +99,10 @@ export function addMonthsIso(iso: string, k: number): string {
   const lastDay = Number(end.slice(8, 10));
   return `${month}-${pad(Math.min(d, lastDay))}`;
 }
+
+/** Dia da semana de "AAAA-MM-DD": 0 = domingo ... 6 = sábado. Sem Date (sem fuso). */
+export function weekdayIso(iso: string): number {
+  const [y, m, d] = iso.split("-").map(Number) as [number, number, number];
+  return (((daysFromCivil(y, m, d) + 4) % 7) + 7) % 7; // 01/01/1970 foi quinta-feira
+}
+

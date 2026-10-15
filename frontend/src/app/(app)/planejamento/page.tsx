@@ -14,6 +14,10 @@ export default function PlanningPage() {
     <div className="stack-lg">
       <PageHeader title="Planejamento" subtitle="Seus objetivos e quanto falta para chegar lá."
         action={<Link className="btn" href="/planejamento/nova/">+ Nova meta</Link>} />
+      <Link href="/planejamento/tetos/" className="card card-link stack">
+        <h2>Teto de gastos</h2>
+        <p className="muted">Quanto quer gastar no máximo em cada categoria. O Início avisa quando chegar perto.</p>
+      </Link>
       <Link href="/planejamento/plano/" className="card card-link stack">
         <h2>Plano do mês</h2>
         <p className="muted">Quanto vai para as contas, quanto investir e quanto fica livre para gastar. E quanto o investimento pode render.</p>

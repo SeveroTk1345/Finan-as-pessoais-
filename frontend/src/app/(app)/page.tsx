@@ -3,9 +3,10 @@
 import Link from "next/link";
 
 import { BiometricOffer } from "@/components/BiometricOffer";
+import { type BudgetAlert, BudgetAlerts, MonthSummary, Shortcuts } from "@/components/Insights";
 import { useShell } from "@/components/Shell";
 import { Badge, DateText, ErrorBox, Loading, Money, Notice, Stat } from "@/components/ui";
-import { shortMonthLabel } from "@/lib/dates";
+import { shiftMonth, shortMonthLabel } from "@/lib/dates";
 import { formatCents } from "@/lib/format";
 import { useApi } from "@/lib/hooks";
 import type { Obligation } from "@/lib/types";
@@ -29,6 +30,9 @@ type Home = {
   net_worth_cents: number;
   upcoming: Obligation[];
   overdue_count: number;
+  per_day_cents: number;
+  per_day_days: number;
+  budget_alerts: BudgetAlert[];
   status: { level: "ok" | "cuidado" | "atencao"; message: string };
   explanations: Record<string, string>;
 };
@@ -66,8 +70,17 @@ export default function HomePage() {
             help={<>Contas, faturas e parcelas até <DateText iso={h.committed_until} />.</>} />
           <Stat size="md" label="Dinheiro livre estimado" cents={h.free_cents} signed help={h.explanations.free} />
         </div>
+        <p className="per-day" aria-live="polite">
+          {h.per_day_cents > 0 ? (
+            <>Dá para gastar cerca de <strong>{formatCents(h.per_day_cents)} por dia</strong> até <DateText iso={h.committed_until} />
+              {h.per_day_days === 1 ? "" : ` (${h.per_day_days} dias)`}.</>
+          ) : (
+            <>Até <DateText iso={h.committed_until} />, as contas já usam todo o dinheiro disponível: <strong>evite novos gastos</strong>.</>
+          )}
+        </p>
       </section>
 
+      <BudgetAlerts alerts={h.budget_alerts} />
       <BiometricOffer userId={me.id} />
 
       <div className="actions" aria-label="Ações rápidas">
@@ -75,6 +88,8 @@ export default function HomePage() {
         <Link className="btn secondary" href="/lancamentos/novo/?tipo=receita">+ Registrar receita</Link>
         <Link className="btn secondary" href="/lancamentos/novo/?tipo=transferencia">Transferir entre contas</Link>
       </div>
+
+      <Shortcuts />
 
       <section className="grid-2" aria-label="Este mês">
         <Link href="/relatorios" className="card card-link">
@@ -85,6 +100,10 @@ export default function HomePage() {
             help="Inclui compras no cartão feitas no mês." />
         </Link>
       </section>
+
+      {Number(h.today.slice(8, 10)) <= 10 ? (
+        <MonthSummary month={shiftMonth(h.month.slice(3) + "-" + h.month.slice(0, 2), -1)} title="Resumo do mês passado" />
+      ) : null}
 
       <section className="stack" aria-labelledby="pagar">
         <div className="between">

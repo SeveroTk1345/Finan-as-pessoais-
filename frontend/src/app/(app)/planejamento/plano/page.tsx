@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import { BackLink, ErrorBox, Loading, MoneyInput, Notice, PageHeader, Stat, TextInput } from "@/components/ui";
-import { formatCents } from "@/lib/format";
+import { formatCents, formatIsoDate } from "@/lib/format";
 import { useApi, useDebounced } from "@/lib/hooks";
 
 type Plan = {
@@ -14,6 +14,7 @@ type Plan = {
   invest_suggested_cents: number;
   free_cents: number;
   projection: { years: number; deposited_cents: number; estimated_cents: number }[];
+  annual: { description: string; amount_cents: number; next_due: string; months_left: number; per_month_cents: number; steady_cents: number }[];
   warnings: string[];
   tips: string[];
   assumptions: string[];
@@ -91,6 +92,42 @@ function Projection({ plan }: { plan: Plan }) {
   );
 }
 
+/** Contas de uma vez por ano: quanto separar por mês para não levar susto. */
+function Annual({ plan }: { plan: Plan }) {
+  const total = plan.annual.reduce((s, a) => s + a.per_month_cents, 0);
+  return (
+    <section className="card stack" aria-labelledby="anuais">
+      <h2 id="anuais">Contas de uma vez por ano</h2>
+      {plan.annual.length === 0 ? (
+        <p className="muted">
+          IPVA, IPTU, seguro, material escolar… Cadastre em Contas a pagar com <strong>Repetir: todo ano</strong> e
+          aqui aparece quanto separar por mês.
+        </p>
+      ) : (
+        <>
+          <ul className="list">
+            {plan.annual.map((a) => (
+              <li key={`${a.description}-${a.next_due}`} className="list-row">
+                <span className="main">
+                  <span className="title">{a.description}</span>
+                  <span className="sub"><span className="nowrap">{formatCents(a.amount_cents)}</span>.{" "}
+                    {a.months_left === 0
+                      ? <>Vence neste mês ({formatIsoDate(a.next_due)}).</>
+                      : <>Vence em {formatIsoDate(a.next_due)}. Faltam {a.months_left === 1 ? "1 mês" : `${a.months_left} meses`}.</>}
+                  </span>
+                </span>
+                <span className="amount">{formatCents(a.per_month_cents)}<span className="small muted">{a.months_left ? " por mês" : ""}</span></span>
+              </li>
+            ))}
+          </ul>
+          <p>Separando <strong>{formatCents(total)} por mês</strong>, o dinheiro estará pronto em cada vencimento.
+            Depois disso, o ritmo de todo ano é de {formatCents(plan.annual.reduce((s, a) => s + a.steady_cents, 0))} por mês.</p>
+        </>
+      )}
+    </section>
+  );
+}
+
 export default function MonthPlanPage() {
   const base = useApi<Plan>("/plano-do-mes");
   const [income, setIncome] = useState<number | null>(null);
@@ -139,6 +176,8 @@ export default function MonthPlanPage() {
           hint="Veja a taxa do seu investimento no banco ou na corretora. Sem taxa, mostra só a soma dos depósitos." />
         {plan ? <Projection plan={plan} /> : null}
       </section>
+
+      {plan ? <Annual plan={plan} /> : null}
 
       {plan ? (
         <ul className="small muted" style={{ margin: 0, paddingLeft: 20 }}>
