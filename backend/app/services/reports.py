@@ -107,7 +107,7 @@ def obligations(ctx: Ctx, until: date) -> list[dict[str, Any]]:
                 "source": "conta",
                 "id": b["id"],
                 "rule_id": b["rule_id"],
-                "description": b["description"],
+                "description": bills_service.bill_title(b),
                 "due_date": b["due_date"],
                 "amount_cents": b["remaining_cents"],
                 "overdue": b["situation"] == "vencida",
@@ -152,7 +152,13 @@ def debts_total(ctx: Ctx) -> dict[str, int]:
     cards_outstanding = 0
     for card in ctx.all("SELECT * FROM cards WHERE owner_id=:o"):
         cards_outstanding += sum(i.remaining.cents for i in cards_service.invoices(ctx, card))
-    return {"debts": direct, "cards": cards_outstanding, "total": direct + cards_outstanding}
+    installments = bills_service.installments_outstanding(ctx)
+    return {
+        "debts": direct,
+        "cards": cards_outstanding,
+        "installments": installments,
+        "total": direct + cards_outstanding + installments,
+    }
 
 
 def _next_income(ctx: Ctx) -> date:
@@ -224,6 +230,7 @@ def home(ctx: Ctx) -> dict[str, Any]:
         "debts_total_cents": debts["total"],
         "debts_direct_cents": debts["debts"],
         "cards_outstanding_cents": debts["cards"],
+        "installments_outstanding_cents": debts["installments"],
         "investments_value_cents": inv_value,
         "investments_missing_value": inv["totals"]["missing_value_count"],
         "net_worth_cents": net_worth,
@@ -234,7 +241,8 @@ def home(ctx: Ctx) -> dict[str, Any]:
             "available": "Soma das contas do dia a dia. Não inclui limite de cartão nem investimentos.",
             "free": f"Dinheiro disponível menos o que vence até {max(next_income, ctx.today).strftime('%d/%m/%Y')}. "
             "Receitas que ainda não caíram não entram.",
-            "debts": "Saldo das dívidas mais o que falta pagar nas faturas dos cartões.",
+            "debts": "Saldo das dívidas, mais o que falta pagar nas faturas dos cartões e nas compras "
+            "parceladas no carnê ou boleto.",
             "net_worth": "Dinheiro em todas as contas + investimentos menos o que você deve.",
         },
     }

@@ -87,6 +87,17 @@ Qualquer decisão M3 pode ser revista pelo Diogo. Mudar uma decisão financeira 
 | F-INV-5 | Movimento de investimento pode ser ligado a uma conta; aí gera o lançamento correspondente na conta (aporte = saída, retirada/rendimento recebido = entrada), fora de receitas e despesas | M3 |
 | F-META-1 | Metas acumulam por contribuições registradas. Projeção usa só a contribuição mensal planejada; rendimento só se o usuário informar a taxa, com o aviso de estimativa | M3 |
 
+### Registro simples de gastos (M5)
+| ID | Decisão | Origem |
+|---|---|---|
+| F-GASTO-1 | Categorias padrão com nomes do dia a dia (Mercado, Contas da casa, Casa, Carro, Transporte, Medicamentos e saúde, Faculdade e cursos, Roupas e acessórios, Restaurante e lanche, Cuidados pessoais, Lazer, Assinaturas, Presentes, Juros e tarifas, Outros), escolhidas em botões grandes com exemplos. Valem para usuários novos; ninguém tinha dados reais ainda | M5 |
+| F-GASTO-2 | É preciso escolher a categoria ou escrever uma descrição; sem descrição, usa o nome da categoria | M5 |
+| F-REP-1 | "Repete" cria, na mesma transação do banco, a recorrência a partir da data do lançamento (sem deslizar o dia) e paga a primeira ocorrência com este lançamento. As próximas viram contas a pagar (F8, F13): nada é debitado sozinho | M5 + opção mais segura |
+| F-REP-2 | Repetição só para despesa ou receita à vista; compra no cartão não se repete (o cartão não tem cobrança recorrente nesta versão) | Limitação documentada |
+| F-PARC-1 | Parcelado no carnê ou boleto: uma conta a pagar por parcela, mensal a partir do 1º vencimento, resto da divisão na 1ª parcela (como no cartão, 5.3). O gasto conta quando cada parcela é paga (F13) | M5 |
+| F-PARC-2 | O que falta pagar dos carnês entra em "Quanto devo" | M5 |
+| F-PARC-3 | "Cancelar as parcelas que faltam" cancela as não pagas (e o restante de uma parcial); o que foi pago continua registrado | Opção mais segura |
+
 ### Simulador "Posso comprar?"
 | ID | Decisão | Origem |
 |---|---|---|

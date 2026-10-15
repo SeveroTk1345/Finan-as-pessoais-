@@ -51,3 +51,27 @@ export function useCategories(kind: "receita" | "despesa") {
       : [];
   return { ...r, options };
 }
+
+/** Exemplos mostrados nos botões das categorias padrão (as criadas pela pessoa não têm). */
+export const CATEGORY_HINTS: Record<string, string> = {
+  Mercado: "Supermercado, feira, padaria",
+  "Contas da casa": "Luz, água, gás, internet, telefone",
+  Casa: "Aluguel, condomínio, móveis, consertos",
+  Carro: "Combustível, manutenção, seguro, IPVA",
+  Transporte: "Ônibus, aplicativo, táxi",
+  "Medicamentos e saúde": "Farmácia, consultas, exames, plano",
+  "Faculdade e cursos": "Mensalidade, material, livros",
+  "Roupas e acessórios": "Roupas, calçados, bolsas",
+  "Restaurante e lanche": "Comer fora, delivery",
+  "Cuidados pessoais": "Cabelo, beleza, higiene",
+  Lazer: "Passeios, viagens, cinema",
+  Assinaturas: "Streaming, aplicativos, clubes",
+  Presentes: "Aniversários, datas especiais",
+  "Juros e tarifas": "Tarifas do banco, juros, IOF",
+  Outros: "O que não se encaixa acima",
+  Salário: "Pagamento do trabalho",
+  Aposentadoria: "INSS, previdência",
+  "Renda extra": "Vendas, bicos, serviços",
+  Benefícios: "Auxílios, bolsas",
+};
+

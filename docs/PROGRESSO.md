@@ -12,6 +12,7 @@ Atualizado em 15/10/2026.
 | Banco | PostgreSQL 16, 3 migrações, 20 tabelas, RLS forçada, chaves compostas, papéis separados | Convenções no catálogo, migração ida e volta, mutação |
 | Isolamento | Filtro na aplicação + RLS; identidade por transação; limpeza no pool | 3 usuários, 6 combinações de acesso cruzado em todas as rotas, pool de 1 conexão, concorrência |
 | Autenticação | Login, sair, trocar senha, expiração, limite de tentativas, CSRF, cabeçalhos de segurança, linha de comando de usuários | API e linha de comando |
+| Registro simples de gastos | Botões de categoria com exemplos, "Repete" (mês, semana, ano), parcelado no cartão ou no carnê/boleto com "parcela X de Y" e cancelamento das restantes | API (12 testes) + ponta a ponta (3) |
 | Digital ou rosto | Passkeys (WebAuthn): ativar por aparelho, entrar sem digitar, listar e remover aparelhos, convite no Início | API com autenticador em software (18 testes, incluindo ataques e isolamento) + ponta a ponta com autenticador virtual do Chromium |
 | Idempotência | Chave por operação em todas as criações | Reenvio, envios simultâneos, resposta perdida (API e navegador) |
 | Contas e lançamentos | Contas, saldos, ajuste com histórico, categorias, receitas, despesas, reembolsos, transferências, edição com histórico, cancelamento | API + ponta a ponta |
@@ -23,7 +24,7 @@ Atualizado em 15/10/2026.
 | Posso comprar? | Simula compra à vista ou no cartão: saldo previsto mês a mês com e sem a compra, efeito no limite, reserva de emergência, comprar agora × não comprar × esperar. Não grava nada | API (6 testes, incluindo isolamento e "nada é gravado") + ponta a ponta 9b |
 | Início e relatórios | Resumo com definições explicadas, relatório mensal, evolução de 12 meses | API + ponta a ponta |
 | Exportação | JSON completo e CSV de lançamentos, só do próprio usuário | API |
-| Interface | 34 telas, preto e branco, acessível, celular e computador | Ponta a ponta (19 testes), tela pequena, rótulos |
+| Interface | 34 telas, preto e branco, acessível, celular e computador | Ponta a ponta (22 testes), tela pequena, rótulos |
 | PWA | Manifesto, ícones iOS, service worker só da estrutura, aviso de versão | Build; uso offline nos testes ponta a ponta |
 | Backup | Diário com rotação, SHA-256, restauração em banco novo | 12 testes + Compose real + restauração dos dados da interface |
 | Implantação | Dockerfile, Compose com Caddy (HTTPS), migração separada, guia | Compose de produção local por HTTPS |

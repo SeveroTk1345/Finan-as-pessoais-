@@ -5,12 +5,13 @@ import { type FormEvent, Suspense, useState } from "react";
 
 import { useShell } from "@/components/Shell";
 import {
+  CategoryPicker,
   BackLink, Checkbox, DateInput, FormError, Loading, MoneyInput, PageHeader, Segmented, Select, SubmitButton, TextInput, useScrollToError,
 } from "@/components/ui";
 import { api } from "@/lib/api";
 import { todayInSaoPaulo } from "@/lib/dates";
 import { useSubmit } from "@/lib/hooks";
-import { NATURES, useAccounts, useCategories } from "@/lib/options";
+import { CATEGORY_HINTS, NATURES, useAccounts, useCategories } from "@/lib/options";
 
 function NewBill() {
   const params = useSearchParams();
@@ -65,7 +66,7 @@ function NewBill() {
           { value: "nao", label: "Não repete" }, { value: "mensal", label: "Todo mês" },
           { value: "semanal", label: "Toda semana" }, { value: "anual", label: "Todo ano" },
         ]} hint="Contas do dia 31 caem no último dia dos meses mais curtos." />
-        <Select label="Categoria" value={categoryId} onChange={setCategoryId} options={categories.options} placeholder="Sem categoria" />
+        <CategoryPicker label="Categoria" value={categoryId} onChange={setCategoryId} options={categories.options} hints={CATEGORY_HINTS} />
         <Select label={kind === "pagar" ? "Conta usada para pagar (opcional)" : "Conta onde vai cair (opcional)"} value={accountId}
           onChange={setAccountId} options={accounts.options} placeholder="Escolher na hora" />
         {kind === "pagar" ? (

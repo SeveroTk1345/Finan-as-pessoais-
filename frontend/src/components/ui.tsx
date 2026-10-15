@@ -241,6 +241,32 @@ export function Segmented<T extends string>({ label, value, onChange, options }:
   );
 }
 
+/**
+ * Escolha em botões grandes ("Com o que foi o gasto?"). Tocar de novo no escolhido
+ * desmarca. Cada botão mostra exemplos, para não precisar adivinhar a categoria.
+ */
+export function CategoryPicker({ label, value, onChange, options, hints = {}, error }: {
+  label: string; value: string; onChange: (v: string) => void; options: { value: string; label: string }[];
+  hints?: Record<string, string>; error?: string;
+}) {
+  const errorId = useId();
+  return (
+    <div className="field" role="group" aria-label={label} aria-describedby={error ? errorId : undefined}>
+      <span className="label">{label}</span>
+      <div className="chips">
+        {options.map((o) => (
+          <button key={o.value} type="button" aria-pressed={value === o.value}
+            onClick={() => onChange(value === o.value ? "" : o.value)}>
+            <span className="chip-title">{o.label}</span>
+            {hints[o.label] ? <span className="chip-hint">{hints[o.label]}</span> : null}
+          </button>
+        ))}
+      </div>
+      {error ? <span id={errorId} className="error">{error}</span> : null}
+    </div>
+  );
+}
+
 export function FormError({ error }: { error: string | null }) {
   if (!error) return null;
   return (

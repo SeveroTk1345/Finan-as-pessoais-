@@ -135,6 +135,11 @@ def categories_update(category_id: UUID, payload: CategoryPatch, svc: Svc) -> di
 # --- lançamentos -----------------------------------------------------------------
 
 
+class RepeatIn(Strict):
+    frequency: Literal["mensal", "semanal", "anual"] = "mensal"
+    end_date: date | None = None
+
+
 class TransactionIn(Strict):
     kind: Literal["receita", "despesa", "reembolso"]
     account_id: UUID
@@ -144,6 +149,8 @@ class TransactionIn(Strict):
     category_id: UUID | None = None
     expense_nature: Nature | None = None
     note: Note = None
+    # Repete todo mês (ou semana, ou ano): as próximas vezes viram contas a pagar.
+    repeat: RepeatIn | None = None
 
 
 class TransactionPatch(Strict):
@@ -197,7 +204,10 @@ def transactions_list(
 
 @router.post("/lancamentos", status_code=201)
 def transactions_create(payload: TransactionIn, svc: Svc) -> JSONResponse:
-    return svc.create(payload, lambda c: ledger.create_transaction(c, payload.model_dump()))
+    data = payload.model_dump()
+    if payload.repeat is not None:
+        return svc.create(payload, lambda c: bills.create_repeating_transaction(c, data))
+    return svc.create(payload, lambda c: ledger.create_transaction(c, data))
 
 
 @router.get("/lancamentos/{tx_id}")
@@ -327,6 +337,33 @@ def bills_pay(bill_id: UUID, payload: PayIn, svc: Svc) -> JSONResponse:
 @router.post("/contas-a-pagar/{bill_id}/cancelar")
 def bills_cancel(bill_id: UUID, svc: Svc) -> dict[str, Any]:
     return svc.run(lambda c: bills.cancel_bill(c, bill_id))
+
+
+class InstallmentPlanIn(Strict):
+    description: Text120
+    total_cents: Cents
+    installments_count: Annotated[int, Field(ge=2, le=72)]
+    first_due_date: date
+    category_id: UUID | None = None
+    account_id: UUID | None = None
+    expense_nature: Nature | None = None
+    note: Note = None
+
+
+@router.post("/parcelamentos", status_code=201)
+def installment_plan_create(payload: InstallmentPlanIn, svc: Svc) -> JSONResponse:
+    """Compra parcelada fora do cartão: uma conta a pagar por parcela."""
+    return svc.create(payload, lambda c: bills.create_installment_plan(c, payload.model_dump()))
+
+
+@router.get("/parcelamentos/{group_id}")
+def installment_plan_get(group_id: UUID, svc: Svc) -> dict[str, Any]:
+    return svc.run(lambda c: bills.installment_plan(c, group_id))
+
+
+@router.post("/parcelamentos/{group_id}/cancelar")
+def installment_plan_cancel(group_id: UUID, svc: Svc) -> dict[str, Any]:
+    return svc.run(lambda c: bills.cancel_installment_plan(c, group_id))
 
 
 @router.get("/recorrencias")

@@ -7,6 +7,7 @@ import {
   formatCents,
   formatIsoDate,
   isValidIsoDate,
+  splitInstallments,
 } from "./format";
 
 // Este arquivo roda em três fusos (ver script "test" do package.json).
@@ -79,5 +80,25 @@ describe(`fuso do processo: ${process.env.TZ ?? "padrão"}`, () => {
       expect(() => digitsToCents("9999999999999999")).toThrow(FormatError);
       expect(() => digitsToCents("100000000000001")).toThrow(FormatError);
     });
+  });
+});
+
+describe("splitInstallments", () => {
+  it("R$ 1.000,00 em 10x e R$ 1.000,00 em 3x (resto na primeira, igual ao backend)", () => {
+    expect(splitInstallments(100000, 10)).toEqual(Array(10).fill(10000));
+    expect(splitInstallments(100000, 3)).toEqual([33334, 33333, 33333]);
+  });
+
+  it("a soma é sempre o total", () => {
+    for (const [total, n] of [[1, 1], [99999, 12], [7, 7], [123456789, 72]] as const) {
+      const parts = splitInstallments(total, n);
+      expect(parts.reduce((a, b) => a + b, 0)).toBe(total);
+      expect(parts).toHaveLength(n);
+    }
+  });
+
+  it("entrada inválida não gera parcelas", () => {
+    expect(splitInstallments(0, 3)).toEqual([]);
+    expect(splitInstallments(100, 0)).toEqual([]);
   });
 });

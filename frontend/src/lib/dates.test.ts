@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { addDaysIso, daysBetween, monthBounds, monthLabel, shiftMonth, shortMonthLabel, todayInSaoPaulo } from "./dates";
+import { addDaysIso, addMonthsIso, daysBetween, monthBounds, monthLabel, shiftMonth, shortMonthLabel, todayInSaoPaulo } from "./dates";
 
 describe(`datas (fuso do processo: ${process.env.TZ ?? "padrão"})`, () => {
   it("hoje em São Paulo independe do fuso do aparelho", () => {
@@ -37,5 +37,15 @@ describe(`datas (fuso do processo: ${process.env.TZ ?? "padrão"})`, () => {
   it("nomes dos meses em português", () => {
     expect(monthLabel("2026-03")).toBe("Março de 2026");
     expect(shortMonthLabel("10/2026")).toBe("out/2026");
+  });
+});
+
+describe("addMonthsIso", () => {
+  it("mantém o dia e limita ao fim do mês, sempre a partir da data original", () => {
+    expect(addMonthsIso("2026-01-31", 1)).toBe("2026-02-28");
+    expect(addMonthsIso("2026-01-31", 2)).toBe("2026-03-31");
+    expect(addMonthsIso("2028-01-31", 1)).toBe("2028-02-29");
+    expect(addMonthsIso("2026-11-15", 2)).toBe("2027-01-15");
+    expect(addMonthsIso("2026-10-15", 0)).toBe("2026-10-15");
   });
 });

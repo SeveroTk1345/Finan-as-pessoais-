@@ -74,3 +74,10 @@ Origem: pedido do Diogo para não precisar digitar senha. A alternativa "app só
 | Entrada só com usuário e senha | Entrada com digital, rosto ou PIN do aparelho (passkeys, padrão WebAuthn), ativada por pessoa e por aparelho. A senha continua existindo para o primeiro acesso em cada aparelho e como reserva |
 
 Decisões A-DIG-1 a A-DIG-8 em `DECISOES.md`.
+
+## M5 · Registro simples de gastos, repetição e parcelas (15/10/2026)
+
+Origem: pedidos do Diogo: gastos continuam manuais, mas escolhendo "com o que foi" (carro, faculdade, roupas e acessórios, medicamento, contas…); fácil de repetir ao longo do tempo; compra parcelada (ex.: R$ 1.000,00 em 10x). Decisões F-GASTO, F-REP e F-PARC em `DECISOES.md`.
+
+Ideias registradas para depois, sem implementação: importação de extratos OFX/CSV em vez de Open Finance; analisador de compras (à vista × parcelado), em tela separada.
+

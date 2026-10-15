@@ -204,7 +204,7 @@ def test_resumo_separa_disponivel_comprometido_e_patrimonio(trio: Trio) -> None:
             "amount_cents": 20000,
             "tx_date": "2026-10-06",
             "description": "Mercado",
-            "category_id": category_id(api, "Alimentação"),
+            "category_id": category_id(api, "Mercado"),
         },
     )
     card = api.post(
@@ -301,7 +301,7 @@ def test_relatorio_mensal_e_transferencia_fora(trio: Trio) -> None:
             "amount_cents": 1000,
             "tx_date": "2026-10-04",
             "description": "Pão",
-            "category_id": category_id(api, "Alimentação"),
+            "category_id": category_id(api, "Mercado"),
         },
     )
     api.post(
@@ -312,13 +312,13 @@ def test_relatorio_mensal_e_transferencia_fora(trio: Trio) -> None:
             "amount_cents": 300,
             "tx_date": "2026-10-05",
             "description": "Amigo devolveu",
-            "category_id": category_id(api, "Alimentação"),
+            "category_id": category_id(api, "Mercado"),
         },
     )
     r = api.get("/api/relatorios/mensal?mes=2026-10").json()
     assert r["income_cents"] == 0  # transferência e reembolso não são receita
     assert r["spending_cents"] == 700
-    assert r["spending_by_category"] == [{"category": "Alimentação", "cents": 700}]
+    assert r["spending_by_category"] == [{"category": "Mercado", "cents": 700}]
     assert r["cash_out_cents"] == 1000 and r["cash_in_cents"] == 300
     assert r["start_balance_cents"] == 100000
     assert r["end_balance_cents"] == 100000 - 700

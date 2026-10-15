@@ -4,14 +4,22 @@ from __future__ import annotations
 
 from sqlalchemy import Connection, text
 
+# Nomes do dia a dia, na ordem em que aparecem nos botões. "Juros e tarifas" é
+# usada automaticamente nos encargos de cartão (services/cards.py).
 DEFAULT_EXPENSE_CATEGORIES = [
-    "Moradia",
-    "Alimentação",
+    "Mercado",
+    "Contas da casa",
+    "Casa",
+    "Carro",
     "Transporte",
-    "Saúde",
-    "Educação",
+    "Medicamentos e saúde",
+    "Faculdade e cursos",
+    "Roupas e acessórios",
+    "Restaurante e lanche",
+    "Cuidados pessoais",
     "Lazer",
     "Assinaturas",
+    "Presentes",
     "Juros e tarifas",
     "Outros",
 ]

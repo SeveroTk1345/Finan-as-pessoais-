@@ -35,8 +35,8 @@ test("1. cria conta bancária e registra uma receita", async () => {
 
   await open(page, "/lancamentos/novo/?tipo=receita");
   await money(page, "Valor", 350000);
-  await page.getByLabel("Descrição").fill("Salário");
-  await page.getByLabel("Categoria").selectOption({ label: "Salário" });
+  // Sem descrição: usa o nome do botão escolhido.
+  await page.getByRole("button", { name: /^Salário/ }).click();
   await page.getByRole("button", { name: "Salvar" }).click();
   await flash(page, "Receita salva.");
   expect(await accountBalance("Conta Corrente")).toBe("R$ 4.500,00");
@@ -45,8 +45,8 @@ test("1. cria conta bancária e registra uma receita", async () => {
 test("2. registra uma despesa e o saldo é atualizado", async () => {
   await open(page, "/lancamentos/novo/?tipo=despesa");
   await money(page, "Valor", 12345);
-  await page.getByLabel("Descrição").fill("Mercado");
-  await page.getByLabel("Categoria").selectOption({ label: "Alimentação" });
+  await page.getByRole("button", { name: /^Mercado/ }).click();
+  await expect(page.getByRole("button", { name: /^Mercado/ })).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "Salvar" }).click();
   await flash(page, "Despesa salva.");
   expect(await accountBalance("Conta Corrente")).toBe("R$ 4.376,55");
@@ -165,7 +165,7 @@ test("9. consulta relatórios e metas", async () => {
 
   await open(page, "/relatorios/");
   await expect(page.getByText("Onde gastei")).toBeVisible();
-  await expect(page.getByRole("figure", { name: "Gastos por categoria" })).toContainText("Alimentação");
+  await expect(page.getByRole("figure", { name: "Gastos por categoria" })).toContainText("Mercado");
   const gastei = page.locator(".card").first();
   await expect(gastei).toContainText("R$ 1.323,45");
 });

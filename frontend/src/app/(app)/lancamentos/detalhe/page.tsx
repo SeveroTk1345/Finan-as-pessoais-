@@ -5,6 +5,7 @@ import { type FormEvent, Suspense, useState } from "react";
 
 import { useShell } from "@/components/Shell";
 import {
+  CategoryPicker,
   BackLink,
   Badge,
   ConfirmButton,
@@ -24,7 +25,7 @@ import { api, ApiError } from "@/lib/api";
 import { todayInSaoPaulo } from "@/lib/dates";
 import { formatCents } from "@/lib/format";
 import { useApi } from "@/lib/hooks";
-import { TX_KINDS, useAccounts, useCategories } from "@/lib/options";
+import { CATEGORY_HINTS, TX_KINDS, useAccounts, useCategories } from "@/lib/options";
 import type { Transaction } from "@/lib/types";
 
 const EDITABLE = ["receita", "despesa", "reembolso", "ajuste"];
@@ -70,7 +71,7 @@ function EditForm({ t }: { t: Transaction }) {
       <TextInput label="Descrição" value={description} onChange={setDescription} error={fields.description} />
       <Select label="Conta" value={accountId} onChange={setAccountId} options={accounts.options} error={fields.account_id} />
       {t.kind !== "ajuste" ? (
-        <Select label="Categoria" value={categoryId} onChange={setCategoryId} options={categories.options} placeholder="Sem categoria" error={fields.category_id} />
+        <CategoryPicker label="Categoria" value={categoryId} onChange={setCategoryId} options={categories.options} hints={CATEGORY_HINTS} error={fields.category_id} />
       ) : null}
       <DateInput label="Data" value={date} onChange={setDate} max={todayInSaoPaulo()} error={fields.tx_date} />
       <SubmitButton busy={busy} online={online}>Salvar alteração</SubmitButton>

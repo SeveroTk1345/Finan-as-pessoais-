@@ -12,14 +12,14 @@ from __future__ import annotations
 from collections.abc import Iterator
 from datetime import date, timedelta
 from typing import Any
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from sqlalchemy import Row
 
 from app.api.errors import ApiError
 from app.domain.bills import bill_status, due_soon
 from app.domain.dates import add_months, monthly_occurrence
-from app.domain.money import Money
+from app.domain.money import Money, split_installments
 from app.services.base import Ctx, check_version, reject_future, row_dict
 from app.services.ledger import _check_bill_payment_limit, _insert_tx, check_category
 
@@ -307,6 +307,7 @@ def pay_bill(ctx: Ctx, bill_id: UUID, data: dict[str, Any]) -> dict[str, Any]:
         category_id=bill.category_id,
         expense_nature=None if receiving else bill.expense_nature,
         bill_id=bill_id,
+        note=data.get("note"),
     )
     return {"bill": get_bill(ctx, bill_id), "transaction": tx}
 
@@ -394,3 +395,140 @@ def update_rule(ctx: Ctx, rule_id: UUID, data: dict[str, Any]) -> dict[str, Any]
 
 def reject_future_payment(on: date, today: date) -> None:
     reject_future(on, today, "tx_date", "O pagamento")
+
+
+# --- gasto ou receita que se repete -------------------------------------------------
+
+
+def create_repeating_transaction(ctx: Ctx, data: dict[str, Any]) -> dict[str, Any]:
+    """Registra o lançamento de hoje e passa a prever as próximas vezes.
+
+    Tudo na mesma transação do banco: cria a recorrência a partir da data do
+    lançamento (sem deslizar o dia), grava a primeira ocorrência e a paga com este
+    lançamento. As próximas aparecem em Contas a pagar para a pessoa confirmar.
+    """
+    kind = data["kind"]
+    if kind not in ("despesa", "receita"):
+        raise ApiError(422, "Só despesas e receitas podem se repetir.", {"repeat": "Não se aplica."})
+    repeat = data["repeat"]
+    reject_future(data["tx_date"], ctx.today, "tx_date", "Um lançamento realizado")
+    end = repeat.get("end_date")
+    if end is not None and end < data["tx_date"]:
+        raise ApiError(422, "A data final é anterior a este lançamento.", {"repeat": "Data final inválida."})
+    rule = create_rule(
+        ctx,
+        {
+            "kind": "pagar" if kind == "despesa" else "receber",
+            "description": data["description"],
+            "amount_cents": data["amount_cents"],
+            "category_id": data.get("category_id"),
+            "account_id": data["account_id"],
+            "expense_nature": data.get("expense_nature"),
+            "frequency": repeat["frequency"],
+            "anchor_date": data["tx_date"],
+            "end_date": end,
+        },
+    )
+    bill_id = materialize(ctx, rule["id"], data["tx_date"])
+    paid = pay_bill(
+        ctx,
+        bill_id,
+        {
+            "amount_cents": data["amount_cents"],
+            "account_id": data["account_id"],
+            "tx_date": data["tx_date"],
+            "note": data.get("note"),
+        },
+    )
+    return {**paid["transaction"], "recurring_rule_id": str(rule["id"])}
+
+
+# --- compra parcelada fora do cartão ---------------------------------------------------
+
+
+def create_installment_plan(ctx: Ctx, data: dict[str, Any]) -> dict[str, Any]:
+    """Carnê, boleto ou crediário: uma conta a pagar por parcela, todo mês a partir
+    do primeiro vencimento. O resto da divisão vai para a primeira parcela."""
+    check_category(ctx, data.get("category_id"), "despesa")
+    _check_account(ctx, data.get("account_id"))
+    count = data["installments_count"]
+    if data["total_cents"] < count:
+        raise ApiError(
+            422, "Valor pequeno demais para tantas parcelas.", {"installments_count": "Menos parcelas."}
+        )
+    parts = split_installments(Money(data["total_cents"]), count)
+    group = uuid4()
+    description = data["description"].strip()
+    for number, part in enumerate(parts, start=1):
+        ctx.exec(
+            """INSERT INTO bills (owner_id, kind, description, amount_cents, due_date, category_id,
+                   account_id, expense_nature, note, installment_group, installment_number,
+                   installments_total)
+               VALUES (:o, 'pagar', :d, :a, :due, :c, :acc, :n, :note, :g, :k, :t)""",
+            d=description,
+            a=part.cents,
+            due=monthly_occurrence(data["first_due_date"], number - 1),
+            c=data.get("category_id"),
+            acc=data.get("account_id"),
+            n=data.get("expense_nature"),
+            note=data.get("note"),
+            g=group,
+            k=number,
+            t=count,
+        )
+    return installment_plan(ctx, group)
+
+
+def installment_plan(ctx: Ctx, group: UUID) -> dict[str, Any]:
+    rows = ctx.all(f"{BILL_SQL} AND b.installment_group = :g ORDER BY b.installment_number", g=group)
+    if not rows:
+        from app.api.errors import not_found
+
+        raise not_found("Parcelamento")
+    bills = [_bill_view(ctx, row_dict(r)) for r in rows]
+    return {
+        "installment_group": str(group),
+        "description": bills[0]["description"],
+        "installments_total": bills[0]["installments_total"],
+        "total_cents": sum(b["amount_cents"] for b in bills),
+        "remaining_cents": sum(b["remaining_cents"] for b in bills),
+        "bills": bills,
+    }
+
+
+def cancel_installment_plan(ctx: Ctx, group: UUID) -> dict[str, Any]:
+    """Cancela as parcelas que ainda faltam pagar. As pagas (e o que já foi pago de
+    uma parcela parcial) continuam registradas."""
+    plan = installment_plan(ctx, group)
+    open_bills = [b for b in plan["bills"] if b["remaining_cents"] > 0]
+    if not open_bills:
+        raise ApiError(409, "Não há parcelas a cancelar.")
+    for b in open_bills:
+        ctx.exec(
+            "UPDATE bills SET status='cancelada', cancelled_at=now(), version=version+1, "
+            "updated_at=now() WHERE id=:id AND owner_id=:o",
+            id=b["id"],
+        )
+        ctx.audit("conta_a_pagar", b["id"], "cancelar", None, {"parcelamento": str(group)})
+    return {**installment_plan(ctx, group), "cancelled": len(open_bills)}
+
+
+def bill_title(bill: dict[str, Any]) -> str:
+    """Descrição com o número da parcela: "Geladeira (3/10)"."""
+    if bill.get("installment_number"):
+        return f"{bill['description']} ({bill['installment_number']}/{bill['installments_total']})"
+    return str(bill["description"])
+
+
+def installments_outstanding(ctx: Ctx) -> int:
+    """Quanto falta pagar de compras parceladas fora do cartão (entra em "Quanto devo")."""
+    return sum(
+        b["remaining_cents"]
+        for b in (
+            _bill_view(ctx, row_dict(r))
+            for r in ctx.all(
+                f"{BILL_SQL} AND b.installment_group IS NOT NULL AND b.kind = 'pagar' "
+                "AND b.status <> 'cancelada'"
+            )
+        )
+    )

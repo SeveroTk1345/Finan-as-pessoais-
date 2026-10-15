@@ -146,3 +146,19 @@ O ponta a ponta usa o autenticador virtual do Chromium (protocolo DevTools). **N
 2. Credencial malformada gerava erro 500: agora toda exceção da biblioteca WebAuthn vira 401.
 3. Com o sensor ativo, o teste de login por senha encontrava dois botões "Entrar": o seletor do teste passou a exigir o nome exato.
 4. Endereço dos testes ponta a ponta trocado de `127.0.0.1` para `localhost`: o WebAuthn não aceita IP como domínio.
+
+## M5 · Registro simples de gastos, repetição e parcelas · 15/10/2026
+
+| Verificação | Resultado |
+|---|---|
+| `pytest` (backend, banco real) | **388 aprovados** na suíte completa; depois dos últimos ajustes, os 62 dos módulos afetados de novo aprovados |
+| `vitest` em 3 fusos | **56 aprovados** em cada fuso (inclui `addMonthsIso` e `splitInstallments`, iguais às regras do backend) |
+| Playwright | **22 aprovados**: categoria por botão, recusa sem categoria nem descrição, repetir todo mês, R$ 1.000,00 em 10x no carnê com "parcela 1 de 10", "Quanto devo" e cancelamento das restantes |
+| Backup e restauração | Conteúdo idêntico |
+
+Testes de API novos (`test_repeat_installments_api.py`): repetição paga hoje e prevê os próximos meses, sem debitar duas vezes; dia 31 sem deslizar; semanal, anual e data final; receita que se repete; falha no meio desfaz tudo (nenhuma recorrência, conta ou lançamento fica gravado); idempotência; 10x de R$ 100,00; resto na 1ª parcela; cancelar as restantes mantendo as pagas e a parcial; validações (inclusive parcelas de R$ 0,00); isolamento entre as três pessoas.
+
+### Defeitos encontrados e corrigidos
+1. Parcelar R$ 0,05 em 7x geraria parcelas de R$ 0,00 (o banco recusaria com erro genérico): agora a API explica "Valor pequeno demais para tantas parcelas".
+2. Dois erros nos próprios testes novos (data final da repetição semanal é inclusiva; chave de idempotência enviada no corpo), corrigidos nos testes.
+

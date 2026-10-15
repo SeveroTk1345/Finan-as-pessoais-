@@ -10,7 +10,7 @@ import { api, newOperationKey } from "@/lib/api";
 import { monthBounds, monthLabel, monthOf, shiftMonth, todayInSaoPaulo } from "@/lib/dates";
 import { formatCents } from "@/lib/format";
 import { useApi } from "@/lib/hooks";
-import type { Bill, Obligation } from "@/lib/types";
+import { billTitle, type Bill, type Obligation } from "@/lib/types";
 
 type Tab = "pagar" | "receber";
 
@@ -114,7 +114,7 @@ export default function BillsPage() {
               <li key={b.id ?? `${b.rule_id}-${b.due_date}`}>
                 <OpenBill bill={b}>
                   <span className="main">
-                    <span className="title">{b.description}</span>
+                    <span className="title">{billTitle(b)}</span>
                     <span className="sub">
                       Vence <DateText iso={b.due_date} />{b.category_name ? ` · ${b.category_name}` : ""}
                       {b.rule_id ? " · repete" : ""}

@@ -38,7 +38,7 @@ def test_receita_e_despesa_atualizam_o_saldo(trio: Trio) -> None:
             "amount_cents": 12345,
             "tx_date": "2026-10-06",
             "description": "Mercado",
-            "category_id": category_id(api, "Alimentação"),
+            "category_id": category_id(api, "Mercado"),
             "expense_nature": "variavel",
         },
     )

@@ -40,7 +40,11 @@ Esqueceu a senha? Peça para quem administra o aplicativo criar uma nova. Ningu�
 
 ## 5. Tarefas do dia a dia
 
-**Registrar uma despesa:** Início → **+ Registrar despesa** → valor (digite só os números: `4590` vira R$ 45,90) → descrição → **Salvar**. Aparece "✓ Despesa salva." quando deu certo.
+**Registrar uma despesa:** Início → **+ Registrar despesa** → valor (digite só os números: `4590` vira R$ 45,90) → toque no botão de **com o que foi o gasto** (Mercado, Contas da casa, Carro, Faculdade e cursos, Roupas e acessórios, Medicamentos e saúde…) → **Salvar**. A descrição é opcional. Aparece "✓ Despesa salva." quando deu certo.
+
+**Gasto que se repete** (internet, faculdade, academia): no mesmo formulário, em **Repete?**, toque em **Repete** e escolha todo mês, toda semana ou todo ano. Esta vez já fica registrada; as próximas aparecem em **Contas a pagar** no dia certo, para você tocar em pagar quando acontecer.
+
+**Compra parcelada:** em **Como pagou?**, escolha **No cartão** (as parcelas vão para as faturas) ou **Carnê ou boleto**. Informe em quantas parcelas e quando vence a primeira; o app mostra, por exemplo, "10x de R$ 100,00". Cada parcela aparece em Contas a pagar como "parcela 3 de 10". Se a compra for desfeita, abra uma parcela e toque em **Cancelar as parcelas que faltam**.
 
 **Registrar uma receita:** Início → **+ Registrar receita**.
 

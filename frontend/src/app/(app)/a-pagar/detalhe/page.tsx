@@ -13,7 +13,7 @@ import { todayInSaoPaulo } from "@/lib/dates";
 import { formatCents } from "@/lib/format";
 import { useApi, useSubmit } from "@/lib/hooks";
 import { useAccounts } from "@/lib/options";
-import type { Bill } from "@/lib/types";
+import { billTitle, type Bill } from "@/lib/types";
 
 function PayForm({ bill, onDone }: { bill: Bill; onDone: () => void }) {
   const { online, flash } = useShell();
@@ -68,10 +68,19 @@ function Detail({ id }: { id: string }) {
       setError(e instanceof Error ? e.message : "Erro.");
     }
   };
+  const cancelPlan = async () => {
+    try {
+      const r = await api.post<{ cancelled: number }>(`/parcelamentos/${b.installment_group}/cancelar`);
+      flash(r.cancelled === 1 ? "1 parcela cancelada." : `${r.cancelled} parcelas canceladas.`);
+      router.push("/a-pagar/");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Erro.");
+    }
+  };
   return (
     <div className="stack-lg">
       <BackLink href="/a-pagar/">Contas a pagar</BackLink>
-      <PageHeader title={b.description} subtitle={<>Vence <DateText iso={b.due_date} />{b.category_name ? ` · ${b.category_name}` : ""}</>} />
+      <PageHeader title={billTitle(b)} subtitle={<>Vence <DateText iso={b.due_date} />{b.category_name ? ` · ${b.category_name}` : ""}</>} />
       <div className="card stack">
         <div className="between"><Situation value={b.situation} receiving={receiving} /></div>
         <div className="grid-2">
@@ -100,6 +109,12 @@ function Detail({ id }: { id: string }) {
           </ul>
           <p className="small muted">Para desfazer um pagamento, abra-o em Receitas e despesas e cancele.</p>
         </section>
+      ) : null}
+      {b.installment_group && open ? (
+        <ConfirmButton label="Cancelar as parcelas que faltam" title="Cancelar as parcelas que faltam?" tone="secondary"
+          message={<p>Todas as parcelas ainda não pagas desta compra deixam de aparecer. As já pagas continuam registradas.
+            Use se a compra foi desfeita ou quitada de outro jeito.</p>}
+          confirmLabel="Sim, cancelar as que faltam" onConfirm={cancelPlan} disabled={!online} />
       ) : null}
       {b.situation !== "cancelada" && b.situation !== "paga" ? (
         <ConfirmButton label="Cancelar esta conta" title="Cancelar esta conta?"

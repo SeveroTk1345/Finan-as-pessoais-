@@ -26,7 +26,7 @@ Cada fato financeiro é registrado uma vez, na tabela que é a sua origem. Telas
 | `accounts` | Contas (saldo inicial + data, marcação "dia a dia") |
 | `categories` | Categorias de receita e despesa |
 | `transactions` | Livro razão: `kind` ∈ receita, despesa, transferencia, ajuste, pagamento_fatura, pagamento_divida, entrada_emprestimo, reembolso, investimento; `status` ativo/cancelado |
-| `recurring_rules`, `bills` | Contas a pagar e a receber |
+| `recurring_rules`, `bills` | Contas a pagar e a receber. Parcelas de carnê ou boleto são contas ligadas por `installment_group`, com `installment_number` e `installments_total` (migração 0005) |
 | `cards`, `card_purchases`, `card_installments`, `card_credits` | Cartões, compras (compra, encargo, parcelamento_fatura), parcelas com a fatura gravada, estornos/cancelamentos/renegociação |
 | `debts`, `debt_events` | Dívidas e encargos, descontos, baixa por renegociação |
 | `investments`, `investment_movements`, `investment_valuations` | Carteira, movimentos e valores informados |

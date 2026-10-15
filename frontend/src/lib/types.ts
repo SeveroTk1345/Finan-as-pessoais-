@@ -59,8 +59,16 @@ export type Bill = {
   virtual: boolean;
   version: number | null;
   note: string | null;
+  installment_group?: string | null;
+  installment_number?: number | null;
+  installments_total?: number | null;
   payments?: { id: string; amount_cents: number; tx_date: string; status: string; account_name: string }[];
 };
+
+/** "Geladeira · parcela 3 de 10" para contas de compra parcelada no carnê. */
+export function billTitle(b: Pick<Bill, "description" | "installment_number" | "installments_total">): string {
+  return b.installment_number ? `${b.description} · parcela ${b.installment_number} de ${b.installments_total}` : b.description;
+}
 
 export type Obligation = {
   source: "conta" | "fatura" | "divida";

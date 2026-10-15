@@ -6,7 +6,8 @@ import { type FormEvent, Suspense, useState } from "react";
 
 import { useShell } from "@/components/Shell";
 import {
-  BackLink, ConfirmButton, DateInput, DateText, ErrorBox, FormError, Loading, Money, MoneyInput, NumberInput, PageHeader, Segmented, Select,
+  CategoryPicker,
+  BackLink, ConfirmButton, DateInput, DateText, ErrorBox, FormError, Loading, Money, MoneyInput, NumberInput, PageHeader, Segmented,
   Situation, Stat, SubmitButton, TextInput, useScrollToError,
 } from "@/components/ui";
 import { api } from "@/lib/api";
@@ -14,7 +15,7 @@ import { todayInSaoPaulo } from "@/lib/dates";
 import { formatCents } from "@/lib/format";
 import { orderInvoices } from "@/lib/invoices";
 import { useApi, useSubmit } from "@/lib/hooks";
-import { useCategories } from "@/lib/options";
+import { CATEGORY_HINTS, useCategories } from "@/lib/options";
 import type { Card } from "@/lib/types";
 
 function PurchaseForm({ card, onDone }: { card: Card; onDone: () => void }) {
@@ -62,7 +63,7 @@ function PurchaseForm({ card, onDone }: { card: Card; onDone: () => void }) {
       ) : null}
       <DateInput label="Data da compra" value={date} onChange={setDate} max={todayInSaoPaulo()} error={f.purchase_date} />
       {kind === "compra" ? (
-        <Select label="Categoria" value={categoryId} onChange={setCategoryId} options={categories.options} placeholder="Sem categoria" />
+        <CategoryPicker label="Com o que foi a compra?" value={categoryId} onChange={setCategoryId} options={categories.options} hints={CATEGORY_HINTS} />
       ) : null}
       <SubmitButton busy={submit.busy} online={online}>Salvar compra</SubmitButton>
     </form>

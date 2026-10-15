@@ -72,3 +72,12 @@ export function formatAnnualRate(rate: string | null): string | null {
   const v = Math.round(Number(rate) * 10000) / 100;
   return `${v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}% ao ano`;
 }
+
+/** Divide em parcelas inteiras que somam exatamente o total; o resto vai na primeira (como o backend). */
+export function splitInstallments(totalCents: number, count: number): number[] {
+  assertCents(totalCents);
+  if (!Number.isInteger(count) || count < 1 || totalCents <= 0) return [];
+  const base = Math.floor(totalCents / count);
+  const rest = totalCents - base * count;
+  return [base + rest, ...Array<number>(count - 1).fill(base)];
+}

@@ -87,3 +87,15 @@ export function daysBetween(a: string, b: string): number {
   const [y2, m2, d2] = b.split("-").map(Number) as [number, number, number];
   return daysFromCivil(y2, m2, d2) - daysFromCivil(y1, m1, d1);
 }
+
+/**
+ * Mesmo dia, `k` meses depois, limitado ao fim do mês (31/01 + 1 = 28/02), sempre a
+ * partir da data original, como no backend (sem deslizar o dia). Não usa Date.
+ */
+export function addMonthsIso(iso: string, k: number): string {
+  const [y, m, d] = iso.split("-").map(Number) as [number, number, number];
+  const month = shiftMonth(`${y}-${pad(m)}`, k);
+  const { end } = monthBounds(month);
+  const lastDay = Number(end.slice(8, 10));
+  return `${month}-${pad(Math.min(d, lastDay))}`;
+}
