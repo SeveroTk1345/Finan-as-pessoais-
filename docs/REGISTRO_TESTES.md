@@ -72,7 +72,7 @@ Ambiente: container Linux desta sessão; PostgreSQL 16.10 em Docker; Python 3.13
 |---|---|
 | `pytest` (backend, banco real) | **357 aprovados**, 0 falhas |
 | `ruff check`, `ruff format --check`, `mypy --strict` | Sem problemas (78 arquivos) |
-| `vitest` (frontend) em 3 fusos | **41 aprovados** em cada fuso |
+| `vitest` (frontend) em 3 fusos | **43 aprovados** em cada fuso |
 | `eslint --max-warnings=0`, `tsc --noEmit` | Sem problemas |
 | `next build` (export estático) | 34 telas geradas |
 | Playwright (`scripts/e2e.sh`) | **17 aprovados**, 0 falhas (inclui 9b, "Posso comprar?") |
@@ -109,6 +109,8 @@ Ambiente: container Linux desta sessão; PostgreSQL 16.10 em Docker; Python 3.13
 5. Cancelamento depois de estorno parcial creditava em dobro (achado por teste de mutação).
 6. O site não aceitava `HEAD`, usado pelo Next.js para pré-carregar páginas.
 7. Na primeira visita, o service worker recarregava a página e apagava o que fora digitado.
+8. "Posso comprar?" dizia "cabe" mesmo com o limite do cartão insuficiente (achado na revisão visual): agora o veredito é "Atenção", com teste.
+9. Detalhe do cartão listava as faturas da mais distante para a mais antiga, deixando a vencida no fim: agora vencidas e aberta vêm primeiro (`orderInvoices`, com teste).
 8. Depois de falha de rede, o botão "Salvar" ficava bloqueado até 30 s; agora reverifica a cada 3 s.
 9. Mensagem "Conta não encontrado" (concordância).
 10. Fatura aberta já paga aparecia só como "Aberta"; agora mostra "Paga".

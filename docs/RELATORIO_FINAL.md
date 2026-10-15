@@ -31,7 +31,7 @@ Todas as do item 1, em três camadas: regras financeiras puras (unitários e pro
 |---|---|
 | pytest (backend, banco real) | 357 aprovados, 0 falhas |
 | ruff, ruff format, mypy strict | Sem problemas |
-| vitest em 3 fusos (São Paulo, UTC, Tóquio) | 41 aprovados em cada |
+| vitest em 3 fusos (São Paulo, UTC, Tóquio) | 43 aprovados em cada |
 | eslint, tsc | Sem problemas |
 | next build | 34 telas |
 | Playwright (14 cenários + extras) | 17 aprovados, 0 falhas |

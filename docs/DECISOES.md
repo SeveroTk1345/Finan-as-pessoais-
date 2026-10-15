@@ -93,7 +93,7 @@ Qualquer decisão M3 pode ser revista pelo Diogo. Mudar uma decisão financeira 
 | F-SIM-1 | Ponto de partida: dinheiro disponível de hoje (contas do dia a dia, sem investimentos e sem limite de cartão). Soma receitas previstas e subtrai contas a pagar (inclusive vencidas, no mês atual), faturas em aberto e parcelas de dívidas cadastradas | Especificação 4.9, opção mais segura |
 | F-SIM-2 | Granularidade mensal; gastos do dia a dia não cadastrados não entram, e a tela avisa para deixar folga | Opção mais segura documentada |
 | F-SIM-3 | Compra no cartão segue o mesmo ciclo de fechamento e a mesma divisão de parcelas das compras reais (F-CARTAO-*) | Consistência |
-| F-SIM-4 | Veredito: "Atenção" se algum mês fica negativo; "Cuidado" se o menor saldo previsto fica abaixo do valor mensal da compra; "cabe" só nos demais casos. Nunca diz "seguro" | Especificação 4.9 |
+| F-SIM-4 | Veredito: "Atenção" se algum mês fica negativo ou se o limite disponível do cartão não comporta a compra; "Cuidado" se o menor saldo previsto fica abaixo do valor mensal da compra; "cabe" só nos demais casos. Nunca diz "seguro" | Especificação 4.9 |
 | F-SIM-5 | "Esperar" indica o primeiro mês a partir do próximo em que pagar à vista não deixa nenhum mês negativo | M3 |
 | F-SIM-6 | A simulação só lê dados: nada é gravado (verificado por teste) | Requisito |
 

@@ -12,6 +12,7 @@ import {
 import { api } from "@/lib/api";
 import { todayInSaoPaulo } from "@/lib/dates";
 import { formatCents } from "@/lib/format";
+import { orderInvoices } from "@/lib/invoices";
 import { useApi, useSubmit } from "@/lib/hooks";
 import { useCategories } from "@/lib/options";
 import type { Card } from "@/lib/types";
@@ -107,7 +108,7 @@ function Detail({ id }: { id: string }) {
   if (card.state === "loading") return <Loading />;
   if (card.state === "error") return <ErrorBox message={card.message} onRetry={card.reload} />;
   const c = card.data;
-  const invoices = [...(c.invoices ?? [])].sort((a, b) => (a.due_date < b.due_date ? 1 : -1));
+  const invoices = orderInvoices(c.invoices ?? []);
   return (
     <div className="stack-lg">
       <BackLink href="/cartoes/">Cartões</BackLink>

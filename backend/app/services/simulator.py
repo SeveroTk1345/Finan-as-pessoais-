@@ -166,8 +166,16 @@ def simulate_purchase(ctx: Ctx, data: dict[str, Any]) -> dict[str, Any]:
     else:
         verdict = {
             "level": "ok",
-            "message": f"Pelas contas registradas, o dinheiro previsto não fica negativo nos próximos {months_ahead} meses.",
+            "message": f"O dinheiro previsto não fica negativo nos próximos {months_ahead} meses.",
         }
+    # Limite insuficiente: o cartão recusaria a compra, então nunca "cabe" (F-SIM-4).
+    if limit_effect is not None and limit_effect["available_after_cents"] < 0:
+        verdict = {
+            "level": "atencao",
+            "message": "O limite disponível do cartão não comporta essa compra. "
+            + (verdict["message"] if verdict["level"] == "atencao" else ""),
+        }
+        verdict["message"] = verdict["message"].strip()
 
     return {
         "available_now_cents": available,

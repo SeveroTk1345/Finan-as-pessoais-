@@ -104,6 +104,9 @@ def test_limite_insuficiente_avisa(trio: Trio) -> None:
         "/api/simulador/compra", {"amount_cents": 60000, "method": "cartao", "card_id": card}, key=None
     ).json()
     assert any("limite" in w for w in body["warnings"])
+    # Mesmo com dinheiro sobrando, uma compra que o limite não comporta nunca "cabe".
+    assert body["verdict"]["level"] == "atencao"
+    assert "limite" in body["verdict"]["message"]
 
 
 def test_simulacao_nao_grava_nada(trio: Trio, admin_engine: Engine) -> None:
