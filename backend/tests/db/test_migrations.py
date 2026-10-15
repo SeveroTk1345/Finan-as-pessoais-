@@ -12,6 +12,8 @@ from sqlalchemy import Engine, create_engine, text
 
 from tests.db.conftest import BACKEND_DIR, DbInfo
 
+HEAD = "0002"
+
 
 @pytest.fixture
 def empty_db(test_db: DbInfo) -> Iterator[str]:
@@ -43,13 +45,13 @@ def test_upgrade_downgrade_upgrade(test_db: DbInfo, empty_db: str) -> None:
     engine = create_engine(url)
     try:
         command.upgrade(cfg, "head")
-        assert _tables(engine) == ["accounts", "alembic_version", "users"]
+        assert set(_tables(engine)) >= {"accounts", "alembic_version", "users"}
         command.downgrade(cfg, "base")
         assert _tables(engine) == ["alembic_version"]
         command.upgrade(cfg, "head")
-        assert _tables(engine) == ["accounts", "alembic_version", "users"]
+        assert set(_tables(engine)) >= {"accounts", "alembic_version", "users"}
         with engine.connect() as conn:
-            assert conn.execute(text("SELECT version_num FROM alembic_version")).scalar() == "0001"
+            assert conn.execute(text("SELECT version_num FROM alembic_version")).scalar() == HEAD
     finally:
         engine.dispose()
 

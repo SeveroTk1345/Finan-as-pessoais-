@@ -34,7 +34,7 @@ pytestmark = pytest.mark.skipif(
     reason="ferramentas do cliente PostgreSQL 16 não encontradas no PATH",
 )
 
-TABLES = ["users", "accounts", "alembic_version"]
+TABLES = ["users", "accounts", "sessions", "idempotency_keys", "alembic_version"]
 
 
 def _pg_env(url: URL, database: str) -> dict[str, str]:
@@ -168,7 +168,12 @@ def test_backup_e_restauracao_completa(
                 text("SELECT has_database_privilege('public', current_database(), 'CONNECT')")
             ).scalar()
         assert [tuple(r) for r in rls] == [("accounts", True, True), ("users", True, True)]
-        assert policies == ["accounts_owner_isolation", "users_self"]
+        assert policies == [
+            "accounts_owner_isolation",
+            "idempotency_keys_owner_isolation",
+            "sessions_owner_isolation",
+            "users_self",
+        ]
         assert public_connect is False
     finally:
         restored_admin.dispose()

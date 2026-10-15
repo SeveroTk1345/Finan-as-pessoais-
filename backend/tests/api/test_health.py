@@ -15,7 +15,10 @@ def test_health_ok() -> None:
 
 def test_health_so_aceita_get() -> None:
     client = TestClient(create_app(Settings(environment="test")))
-    assert client.post("/api/health").status_code == 405
+    # Sem Origin, a proteção CSRF recusa antes (403); com Origin válido, 405.
+    assert client.post("/api/health").status_code == 403
+    headers = {"Origin": "http://localhost:3000", "X-Requested-With": "fetch"}
+    assert client.post("/api/health", headers=headers).status_code == 405
 
 
 def test_rota_inexistente_404() -> None:

@@ -210,7 +210,8 @@ def test_papel_da_aplicacao_nao_cria_usuarios_nem_altera_esquema(
 ) -> None:
     forbidden = [
         "INSERT INTO users (username, display_name, password_hash) VALUES ('intruso','X','!')",
-        "UPDATE users SET password_hash='x'",
+        "UPDATE users SET username='x'",
+        "UPDATE users SET is_active=false",
         "DELETE FROM users",
         "TRUNCATE accounts",
         "ALTER TABLE accounts DISABLE ROW LEVEL SECURITY",

@@ -135,4 +135,4 @@ def users(admin_engine: Engine) -> Iterator[Users]:
         yield Users(ids["ana"], ids["bruno"], ids["carla"])
     finally:
         with admin_engine.begin() as conn:
-            conn.execute(text("TRUNCATE accounts, users"))
+            conn.execute(text("TRUNCATE users, login_attempts CASCADE"))
