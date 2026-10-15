@@ -53,7 +53,8 @@ def _serve_static(app: FastAPI, root: Path) -> None:
     """Serve o site exportado pelo Next.js na mesma origem da API."""
     root = root.resolve()
 
-    @app.get("/{path:path}", include_in_schema=False)
+    # GET e HEAD: o roteador do Next.js usa HEAD para pré-carregar páginas.
+    @app.api_route("/{path:path}", methods=["GET", "HEAD"], include_in_schema=False)
     def static(path: str) -> Response:
         if path.startswith("api/") or path == "api":
             return JSONResponse({"detail": "Não encontrado."}, status_code=404)

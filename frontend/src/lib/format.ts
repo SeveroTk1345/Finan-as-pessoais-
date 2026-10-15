@@ -65,3 +65,10 @@ export function digitsToCents(input: string): number {
   assertCents(cents);
   return cents;
 }
+
+/** Taxa anual em fração vinda da API ("0.1234") -> "12,34% ao ano". Só exibição. */
+export function formatAnnualRate(rate: string | null): string | null {
+  if (rate === null) return null;
+  const v = Math.round(Number(rate) * 10000) / 100;
+  return `${v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}% ao ano`;
+}

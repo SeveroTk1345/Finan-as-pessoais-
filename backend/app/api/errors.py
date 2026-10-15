@@ -24,9 +24,23 @@ class ApiError(Exception):
         self.fields = fields or {}
 
 
+_FEMININE = {
+    "Conta",
+    "Conta a pagar",
+    "Compra",
+    "Fatura",
+    "Dívida",
+    "Meta",
+    "Recorrência",
+    "Categoria",
+    "Contribuição",
+}
+
+
 def not_found(what: str = "Registro") -> ApiError:
     # Mesma resposta para "não existe" e "é de outra pessoa".
-    return ApiError(404, f"{what} não encontrado.")
+    ending = "encontrada" if what in _FEMININE else "encontrado"
+    return ApiError(404, f"{what} não {ending}.")
 
 
 _MESSAGES = {

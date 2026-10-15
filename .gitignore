@@ -25,3 +25,7 @@ backups/
 
 # Sistema
 .DS_Store
+
+# Resultados do Playwright
+frontend/test-results/
+frontend/playwright-report/
