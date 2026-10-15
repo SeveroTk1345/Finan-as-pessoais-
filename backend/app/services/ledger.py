@@ -391,15 +391,9 @@ def get_transaction(ctx: Ctx, tx_id: UUID) -> dict[str, Any]:
     return out
 
 
-EDITABLE_KINDS = {
-    "receita",
-    "despesa",
-    "reembolso",
-    "ajuste",
-    "pagamento_fatura",
-    "pagamento_divida",
-    "entrada_emprestimo",
-}
+# Pagamentos de fatura e de dívida mexem em outros saldos: são corrigidos cancelando
+# e registrando de novo, para as validações de limite valerem outra vez.
+EDITABLE_KINDS = {"receita", "despesa", "reembolso", "ajuste"}
 
 
 def update_transaction(ctx: Ctx, tx_id: UUID, data: dict[str, Any]) -> dict[str, Any]:
