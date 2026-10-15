@@ -35,7 +35,7 @@ describe(`datas (fuso do processo: ${process.env.TZ ?? "padrão"})`, () => {
   });
 
   it("nomes dos meses em português", () => {
-    expect(monthLabel("2026-03")).toBe("março de 2026");
+    expect(monthLabel("2026-03")).toBe("Março de 2026");
     expect(shortMonthLabel("10/2026")).toBe("out/2026");
   });
 });

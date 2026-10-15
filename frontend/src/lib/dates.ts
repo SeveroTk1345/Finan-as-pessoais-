@@ -41,7 +41,9 @@ const MONTHS = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "jul
 /** "2026-10" -> "outubro de 2026" */
 export function monthLabel(month: string): string {
   const [y, m] = month.split("-").map(Number) as [number, number];
-  return `${MONTHS[m - 1]} de ${y}`;
+  const name = MONTHS[m - 1] ?? "";
+  // Só a primeira letra: "Outubro de 2026" (CSS capitalize deixaria "Outubro De 2026").
+  return `${name.charAt(0).toUpperCase()}${name.slice(1)} de ${y}`;
 }
 
 /** "10/2026" (formato da API nos relatórios) -> "out/2026" */

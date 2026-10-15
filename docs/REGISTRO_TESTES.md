@@ -111,6 +111,7 @@ Ambiente: container Linux desta sessão; PostgreSQL 16.10 em Docker; Python 3.13
 7. Na primeira visita, o service worker recarregava a página e apagava o que fora digitado.
 8. "Posso comprar?" dizia "cabe" mesmo com o limite do cartão insuficiente (achado na revisão visual): agora o veredito é "Atenção", com teste.
 9. Detalhe do cartão listava as faturas da mais distante para a mais antiga, deixando a vencida no fim: agora vencidas e aberta vêm primeiro (`orderInvoices`, com teste).
+10. Título do mês saía "Outubro De 2026" (CSS `capitalize` em todas as palavras): agora "Outubro de 2026".
 8. Depois de falha de rede, o botão "Salvar" ficava bloqueado até 30 s; agora reverifica a cada 3 s.
 9. Mensagem "Conta não encontrado" (concordância).
 10. Fatura aberta já paga aparecia só como "Aberta"; agora mostra "Paga".

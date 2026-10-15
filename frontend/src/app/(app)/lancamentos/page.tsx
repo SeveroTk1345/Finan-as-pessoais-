@@ -47,7 +47,7 @@ export default function TransactionsPage() {
 
       <div className="between" role="group" aria-label="Escolher o mês">
         <button type="button" className="btn secondary" onClick={() => setMonth(shiftMonth(month, -1))} aria-label="Mês anterior">← Anterior</button>
-        <h2 style={{ textTransform: "capitalize" }} aria-live="polite">{monthLabel(month)}</h2>
+        <h2 aria-live="polite">{monthLabel(month)}</h2>
         <button type="button" className="btn secondary" onClick={() => setMonth(shiftMonth(month, 1))} aria-label="Próximo mês">Próximo →</button>
       </div>
 

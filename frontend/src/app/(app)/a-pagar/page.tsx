@@ -90,7 +90,7 @@ export default function BillsPage() {
 
       <div className="between" role="group" aria-label="Escolher o mês">
         <button type="button" className="btn secondary" onClick={() => setMonth(shiftMonth(month, -1))}>← Anterior</button>
-        <h2 style={{ textTransform: "capitalize" }} aria-live="polite">{monthLabel(month)}</h2>
+        <h2 aria-live="polite">{monthLabel(month)}</h2>
         <button type="button" className="btn secondary" onClick={() => setMonth(shiftMonth(month, 1))}>Próximo →</button>
       </div>
 
