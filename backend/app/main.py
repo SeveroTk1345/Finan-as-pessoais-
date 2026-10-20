@@ -6,8 +6,9 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.responses import FileResponse, JSONResponse, Response
 from sqlalchemy import Engine
+from sqlalchemy.pool import NullPool
 
-from app.api import auth, health
+from app.api import auth, health, setup
 from app.api.errors import install_error_handlers
 from app.api.middleware import install_middleware
 from app.api.routes import register_routes
@@ -23,7 +24,11 @@ def create_app(
 ) -> FastAPI:
     settings = settings or get_settings()
     if engine is None and settings.database_url is not None:
-        engine = make_engine(settings.database_url.get_secret_value(), pool_size=5, max_overflow=5)
+        url = settings.database_url.get_secret_value()
+        if settings.db_keep_connections:
+            engine = make_engine(url, pool_size=5, max_overflow=5)
+        else:
+            engine = make_engine(url, poolclass=NullPool)
 
     # Documentação interativa só fora de produção.
     docs_enabled = not settings.is_production
@@ -42,6 +47,7 @@ def create_app(
     install_middleware(app, settings)
     app.include_router(health.router, prefix="/api")
     app.include_router(auth.router, prefix="/api")
+    app.include_router(setup.router, prefix="/api")
     register_routes(app)
 
     if settings.static_dir is not None:

@@ -1,5 +1,7 @@
 # Implantação
 
+> **Caminho atual: Render + Neon, só pelo navegador.** Ver `IMPLANTACAO_RENDER.md`. Este documento descreve o caminho com servidor próprio (Docker Compose), que continua válido.
+
 **Situação atual:** a aplicação **não está publicada**. Tudo o que depende de uma conta externa (provedor de nuvem e domínio) precisa ser feito pelo Diogo; o Claude não cria contas nem aceita termos de serviços. O que já foi testado de verdade está no fim deste documento.
 
 ## Arquitetura de produção

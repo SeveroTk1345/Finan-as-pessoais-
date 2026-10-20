@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import os
 import secrets
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from pathlib import Path
 from uuid import UUID
@@ -133,3 +133,45 @@ def users(admin_engine: Engine) -> Iterator[Users]:
     finally:
         with admin_engine.begin() as conn:
             conn.execute(text("TRUNCATE users, login_attempts CASCADE"))
+
+
+@pytest.fixture
+def neon_like_factory(test_db: DbInfo) -> Iterator[Callable[[], URL]]:
+    """Cria bancos cujo dono imita o do Neon: sem superusuário, com BYPASSRLS e
+    CREATEROLE. Cada chamada devolve o endereço de um banco novo e vazio."""
+    server = test_db.admin_url.set(database="postgres")
+    maint = create_engine(server, isolation_level="AUTOCOMMIT")
+    created: list[tuple[str, str]] = []
+
+    def make() -> URL:
+        owner = f"neon_dono_{secrets.token_hex(4)}"
+        owner_pw = secrets.token_hex(16)
+        db = f"neon_sim_{secrets.token_hex(4)}"
+        with maint.connect() as conn:
+            conn.exec_driver_sql(
+                sql.SQL("CREATE ROLE {} LOGIN NOSUPERUSER CREATEDB CREATEROLE BYPASSRLS PASSWORD {}")
+                .format(sql.Identifier(owner), sql.Literal(owner_pw))
+                .as_string(None)
+            )
+            # No Neon o próprio dono cria fin_app; aqui o papel já existe no servidor de
+            # teste, então o dono recebe permissão de administrá-lo (sem herdar nada dele).
+            conn.exec_driver_sql(f'GRANT fin_app TO "{owner}" WITH ADMIN OPTION, INHERIT FALSE, SET FALSE')
+            conn.exec_driver_sql(f'CREATE DATABASE "{db}" OWNER "{owner}"')
+        created.append((db, owner))
+        return server.set(database=db, username=owner, password=owner_pw)
+
+    try:
+        yield make
+    finally:
+        with maint.connect() as conn:
+            for db, owner in reversed(created):
+                conn.exec_driver_sql(f'DROP DATABASE IF EXISTS "{db}" WITH (FORCE)')
+                conn.exec_driver_sql(f'DROP OWNED BY "{owner}"')
+                conn.exec_driver_sql(f'DROP ROLE IF EXISTS "{owner}"')
+        maint.dispose()
+
+
+@pytest.fixture
+def neon_like(neon_like_factory: Callable[[], URL]) -> URL:
+    """Um banco vazio com dono estilo Neon."""
+    return neon_like_factory()

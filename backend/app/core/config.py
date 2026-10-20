@@ -6,8 +6,17 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
-from pydantic import SecretStr
+from pydantic import SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+def normalize_database_url(url: str) -> str:
+    """Aceita o endereço como os provedores entregam (postgres:// ou postgresql://) e
+    usa o driver psycopg 3, o único instalado."""
+    for prefix in ("postgresql+psycopg://", "postgresql://", "postgres://"):
+        if url.startswith(prefix):
+            return "postgresql+psycopg://" + url[len(prefix) :]
+    return url
 
 
 class Settings(BaseSettings):
@@ -46,6 +55,27 @@ class Settings(BaseSettings):
     webauthn_rp_id: str | None = None
     webauthn_rp_name: str = "Finanças"
     webauthn_challenge_seconds: int = 5 * 60
+
+    # De onde vem o IP de quem acessa (usado no limite de tentativas de login):
+    # "primeiro" valor do X-Forwarded-For atrás do Caddy, que reescreve o cabeçalho;
+    # "ultimo" em plataformas cujo proxy só acrescenta o IP real no fim.
+    client_ip_from: Literal["primeiro", "ultimo"] = "primeiro"
+
+    # Código para criar e redefinir contas pelo navegador (/configurar), onde não há
+    # terminal. Sem ele, a configuração pelo navegador fica desligada.
+    setup_token: SecretStr | None = None
+
+    # Manter conexões abertas com o banco entre pedidos. Em banco que "dorme" quando
+    # ninguém usa (Neon grátis), conexão parada aberta poderia mantê-lo acordado e
+    # gastar a cota mensal; lá cada pedido abre e fecha a sua.
+    db_keep_connections: bool = True
+
+    @field_validator("database_url", "database_admin_url", mode="before")
+    @classmethod
+    def _normalize_url(cls, value: object) -> object:
+        if isinstance(value, SecretStr):
+            value = value.get_secret_value()
+        return normalize_database_url(value) if isinstance(value, str) and value else value
 
     @property
     def is_production(self) -> bool:

@@ -37,11 +37,15 @@ def get_clock(request: Request) -> Clock:
 
 
 def client_ip(request: Request) -> str:
-    # Atrás do Caddy, o IP real vem em X-Forwarded-For (o Caddy sobrescreve o valor
-    # enviado pelo cliente). Sem proxy, usa o IP da conexão.
+    # Atrás do Caddy, o IP real é o primeiro do X-Forwarded-For (o Caddy sobrescreve o
+    # valor enviado pelo cliente). Em plataformas cujo proxy só acrescenta, é o último
+    # (o primeiro poderia ser forjado). Sem proxy, usa o IP da conexão.
     forwarded = request.headers.get("x-forwarded-for")
-    if forwarded and request.app.state.settings.is_production:
-        return forwarded.split(",")[0].strip()[:64]
+    settings = request.app.state.settings
+    if forwarded and settings.is_production:
+        parts = [p.strip() for p in forwarded.split(",") if p.strip()]
+        if parts:
+            return (parts[-1] if settings.client_ip_from == "ultimo" else parts[0])[:64]
     return (request.client.host if request.client else "desconhecido")[:64]
 
 

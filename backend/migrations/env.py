@@ -17,7 +17,9 @@ def _admin_url() -> str:
     )
     if not url:
         raise RuntimeError("defina FIN_DATABASE_ADMIN_URL para rodar migrações")
-    return url
+    from app.core.config import normalize_database_url
+
+    return normalize_database_url(url)
 
 
 def run_migrations_online() -> None:

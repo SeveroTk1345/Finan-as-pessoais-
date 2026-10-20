@@ -42,6 +42,7 @@ for pair in "ana:Ana:abacate-verde-2026" "bruno:Bruno:bicicleta-azul-2026" "carl
 done
 
 FIN_ENVIRONMENT=test \
+FIN_SETUP_TOKEN="codigo-sintetico-de-configuracao-e2e" \
 FIN_DATABASE_URL="postgresql+psycopg://fin_app:${APP_PW}@127.0.0.1:${DBPORT}/financas" \
 FIN_ALLOWED_ORIGINS="http://127.0.0.1:${PORT},http://localhost:${PORT}" \
 FIN_STATIC_DIR="$ROOT/frontend/out" \

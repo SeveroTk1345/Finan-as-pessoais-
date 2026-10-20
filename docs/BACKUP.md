@@ -60,7 +60,10 @@ Em `backend/tests/db/test_backup_restore.py`, executados contra um PostgreSQL 16
 
 Além disso, o fluxo completo foi executado com o `docker compose` real (registrado em `REGISTRO_TESTES.md`).
 
-## Pendências
+## No Render + Neon
+Cópia diária cifrada (AES-256) pelo GitHub Actions, guardada por 30 dias, e restauração em banco vazio por workflow manual: `scripts/backup-cifrado.sh`, `scripts/restaurar-cifrado.sh`, `.github/workflows/backup.yml` e `restaurar.yml`. Passo a passo em `IMPLANTACAO_RENDER.md` (passo 6). Isso resolve a cópia externa e a cifra para esse caminho.
+
+## Pendências (servidor próprio)
 * **Cópia fora do servidor (D9).** Hoje as cópias ficam no mesmo servidor do banco, em pasta separada do volume do banco. Isso protege contra erro humano e corrupção do banco, mas **não** contra perda do servidor. Falta escolher o destino externo; nada pago será habilitado sem autorização.
 * **Criptografia da cópia.** Será aplicada junto com o destino externo.
 * **Exportação individual por usuário (P2)** entra na etapa de exportação de dados.

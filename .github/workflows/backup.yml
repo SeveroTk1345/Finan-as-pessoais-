@@ -1,0 +1,55 @@
+# Cópia de segurança diária do banco do Neon, CIFRADA, guardada como artefato do
+# GitHub por 30 dias. O plano grátis do Neon só volta 6 horas no tempo; isto cobre o resto.
+#
+# Precisa de dois segredos do repositório (Settings → Secrets and variables → Actions):
+#   FIN_DATABASE_ADMIN_URL  endereço do dono do banco (o que o Neon mostra em "Connect")
+#   FIN_BACKUP_PASSPHRASE   frase-senha da cifra (guarde também fora do GitHub!)
+# Sem eles, o job só avisa e termina: forks e clones não tentam nada.
+name: Backup do banco
+
+on:
+  schedule:
+    - cron: "17 6 * * *" # todo dia, 03:17 em Brasília
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backup-banco
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    if: github.repository == 'SeveroTk1345/Finan-as-pessoais-'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      FIN_DATABASE_ADMIN_URL: ${{ secrets.FIN_DATABASE_ADMIN_URL }}
+      FIN_BACKUP_PASSPHRASE: ${{ secrets.FIN_BACKUP_PASSPHRASE }}
+    steps:
+      - name: Conferir segredos
+        id: segredos
+        run: |
+          if [ -z "$FIN_DATABASE_ADMIN_URL" ] || [ -z "$FIN_BACKUP_PASSPHRASE" ]; then
+            echo "::warning::Segredos do backup não configurados; nada foi feito."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.segredos.outputs.ok == 'true'
+        uses: actions/checkout@v4
+      - if: steps.segredos.outputs.ok == 'true'
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client-16 gnupg
+      - if: steps.segredos.outputs.ok == 'true'
+        name: Gerar cópia cifrada
+        run: |
+          mkdir -p saida
+          scripts/backup-cifrado.sh "saida/fin_$(date -u +%Y%m%dT%H%M%SZ).dump.gpg"
+      - if: steps.segredos.outputs.ok == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: backup-cifrado-${{ github.run_id }}
+          path: saida/
+          retention-days: 30
+          if-no-files-found: error

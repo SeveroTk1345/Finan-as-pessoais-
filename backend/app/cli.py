@@ -23,6 +23,7 @@ from collections.abc import Sequence
 
 from sqlalchemy import Connection, Engine, create_engine, text
 
+from app.core.config import normalize_database_url
 from app.core.security import WeakPasswordError, hash_password, validate_new_password
 from app.services.user_setup import seed_user_defaults
 
@@ -31,7 +32,7 @@ def _engine() -> Engine:
     url = os.environ.get("FIN_DATABASE_ADMIN_URL")
     if not url:
         raise SystemExit("Defina FIN_DATABASE_ADMIN_URL.")
-    return create_engine(url)
+    return create_engine(normalize_database_url(url))
 
 
 def _read_password(username: str, from_stdin: bool) -> str:

@@ -1,0 +1,24 @@
+# Render (plano grátis): app inteiro em um serviço Docker; banco no Neon (grátis).
+# Passo a passo em docs/IMPLANTACAO_RENDER.md. Nada aqui é segredo: os valores sensíveis
+# são gerados pelo próprio Render (generateValue) ou colados no painel (sync: false).
+services:
+  - type: web
+    name: financas
+    runtime: docker
+    plan: free
+    region: virginia # perto do Neon em us-east-1: cada consulta ao banco fica rápida
+    branch: desenvolvimento
+    dockerfilePath: ./Dockerfile
+    # Cria o papel fin_app, aplica migrações, confere a RLS e só então sobe a API.
+    dockerCommand: python -m app.deploy_start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: FIN_DATABASE_ADMIN_URL # endereço do Neon (dono do banco); colar no painel
+        sync: false
+      - key: FIN_DB_APP_PASSWORD # senha do papel da API (fin_app)
+        generateValue: true
+      - key: FIN_SETUP_TOKEN # código da página /configurar
+        generateValue: true
+      - key: WEB_CONCURRENCY # 512 MB de memória: um processo basta para 3 pessoas
+        value: "1"

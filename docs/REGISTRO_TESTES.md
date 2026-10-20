@@ -216,3 +216,28 @@ A função de gastos por categoria foi refatorada para agrupar pelo identificado
 2. "← Anterior / Próximo →" quebrava em duas linhas no celular em Receitas e despesas, Contas a pagar, Relatórios e Calendário: navegação de mês numa linha só, com nome acessível nos botões.
 3. Contas anuais: "IPVA: R$ 1.200,00" quebrava mal e faltava espaço em "R$ 1.200,00.Vence".
 
+
+## Publicação no Render + Neon e backup cifrado · 20/10/2026
+
+| Verificação | Resultado |
+|---|---|
+| `pytest` (backend, banco real) | **454 aprovados**, 0 falhas |
+| `ruff`, `ruff format`, `mypy --strict` | Sem problemas |
+| `vitest` em 3 fusos | **57 aprovados** em cada fuso |
+| Playwright | **31 aprovados** (novo: /configurar troca a senha com o código) |
+| Imagem Docker real, rodando como no Render | Ver abaixo |
+
+Início em plataforma gerenciada (`test_deploy_start.py`, 11): endereço do Neon convertido para o driver; senha da API com `/ + =` não quebra o endereço; ambiente do servidor sem as credenciais do dono; senha curta recusada; migrações com um dono **sem superusuário** (como o do Neon) e a API continua sob RLS; papel com BYPASSRLS ou membro de papel que ignora a RLS faz o início falhar; início completo em subprocesso, conferindo em `/proc/PID/environ` que o servidor web não tem a senha do dono; IP do visitante pelo primeiro ou pelo último valor do `X-Forwarded-For`; pool sem conexões paradas quando o banco dorme.
+
+Configuração pelo navegador (`test_setup_api.py`): desligada sem código (404); código errado (403) e bloqueio após 20 erros (429); cria até 3 contas, com categorias padrão; a 4ª e o usuário repetido são recusados (409); a conta criada entra; troca de senha encerra as sessões; validações (422).
+
+Backup cifrado (`test_backup_cifrado.py`, 3): ida e volta com contagem idêntica em todas as tabelas; o arquivo não contém o texto marcador dos dados; nenhuma cópia aberta fica na pasta; frase-senha errada recusada; destino com tabelas recusado; banco de produção recusado; restaurado continua isolado (a API sem identidade não vê ninguém); frase-senha curta recusada.
+
+Imagem real (`docker build` + `python -m app.deploy_start` com `PORT=10000` e um dono de banco sem superusuário): log na ordem esperada; `/api/health` respondeu; `/api/configuracao` mostrou 0 de 3 contas; `/configurar/` respondeu 200; o HEALTHCHECK da imagem, agora pela variável `PORT`, ficou "healthy"; o processo 1 (servidor web) tinha `FIN_DATABASE_URL` e **não** tinha `FIN_DATABASE_ADMIN_URL` nem `FIN_DB_APP_PASSWORD`.
+
+**Não testado aqui (depende das contas do Diogo):** o Render e o Neon de verdade e os workflows de backup no GitHub. O primeiro backup manual (passo 6 do guia) é a prova que falta.
+
+### Defeitos encontrados e corrigidos
+1. Um dono de banco sem superusuário não pode nem mencionar `NOSUPERUSER` em `CREATE/ALTER ROLE`: o comando foi ajustado e a checagem posterior confere o atributo.
+2. O HEALTHCHECK da imagem consultava sempre a porta 8000; no Render a porta vem de `PORT`.
+3. `pg_dump` não lê endereço completo em `PGDATABASE`: o endereço vai sem senha no argumento e a senha só por `PGPASSWORD`.

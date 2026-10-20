@@ -163,9 +163,21 @@ Qualquer decisão M3 pode ser revista pelo Diogo. Mudar uma decisão financeira 
 | A-DIG-7 | "Manter conectado neste aparelho" vale também para a digital. Sem a opção, a sessão é curta, mas entrar de novo é só tocar no sensor | Opção mais segura |
 | A-DIG-8 | A credencial fica presa ao domínio do app. **Se o domínio mudar, cada pessoa precisa ativar de novo** (a senha continua funcionando) | Limitação do padrão |
 
+### Publicação no Render + Neon
+| ID | Decisão | Origem |
+|---|---|---|
+| R-1 | Render (app) + Neon (banco), ambos grátis e sem cartão: o computador do Diogo não roda Docker e o cadastro na Oracle não funcionou | Pedido do Diogo |
+| R-2 | `app.deploy_start` cria `fin_app` sem superusuário e sem BYPASSRLS, migra com o dono do banco e **recusa subir** se `fin_app` puder ignorar a RLS (direto, por herança de papel ou sendo dono de tabela). O servidor web nasce sem a senha do dono no ambiente | Opção mais segura |
+| R-3 | Contas criadas pela página /configurar, protegida por `FIN_SETUP_TOKEN` (o Render grátis não tem terminal). Sem a variável, a página fica desligada; a recomendação é apagá-la depois de criar as contas. Limite de 3 contas imposto no banco | Opção mais segura |
+| R-4 | IP de quem acessa: último valor do `X-Forwarded-For` (o proxy do Render acrescenta o real no fim; o primeiro pode ser forjado). Atrás do Caddy continua o primeiro | Opção mais segura |
+| R-5 | Sem conexões paradas abertas no Neon (`FIN_DB_KEEP_CONNECTIONS=false`): o banco grátis dorme sem uso e não gasta a cota de 100 horas; custo de alguns milissegundos por pedido | Custo zero |
+| R-6 | Backup diário cifrado (AES-256, gpg simétrico) como artefato do GitHub por 30 dias. O repositório é público, então nada sai sem cifra; a frase-senha fica só com o Diogo | Opção mais segura |
+| R-7 | Neon na versão 16 e região us-east-1, Render na Virgínia: ferramentas de backup da mesma versão e banco perto do app | Técnica |
+
 ## 4. Pendências que dependem do Diogo
 | ID | O que falta | Bloqueia |
 |---|---|---|
-| H1 | Criar a conta no provedor de nuvem e liberar a VM (o Claude não cria contas) | Publicação |
+| H1 | Criar as contas no Neon e no Render e seguir `IMPLANTACAO_RENDER.md` (o Claude não cria contas) | Publicação |
+| H2 | Salvar os segredos do backup no GitHub e levar o código para a `main` (agendamentos só rodam na branch principal) | Backup diário |
 | D9 | Escolher o destino da cópia externa do backup | Proteção contra perda do servidor |
 | P3 | Comunicar às outras duas pessoas o que está em `PRIVACIDADE.md` | Uso real pelas três pessoas |

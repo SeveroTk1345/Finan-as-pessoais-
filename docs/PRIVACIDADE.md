@@ -35,4 +35,5 @@ Documento para as três pessoas que usam o aplicativo (decisão P3).
 * A segurança depende também do servidor estar atualizado e das senhas não serem compartilhadas.
 * Nenhuma auditoria de segurança externa foi feita.
 * Quem souber o PIN de desbloqueio do seu celular também passa pela "digital ou rosto", porque o próprio aparelho aceita o PIN como alternativa. Não compartilhe o PIN do celular.
-* As cópias de segurança ainda não são cifradas nem copiadas para fora do servidor (pendência D9).
+* No servidor próprio, as cópias ainda não são cifradas nem copiadas para fora (pendência D9). No Render + Neon, a cópia diária sai cifrada para o GitHub e fica 30 dias; sem a frase-senha (que só o administrador tem) ela não pode ser aberta.
+* No Render + Neon, o app e o banco ficam em servidores dessas empresas nos EUA (Virgínia). Elas têm acesso técnico à infraestrutura, como qualquer hospedagem.

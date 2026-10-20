@@ -32,6 +32,7 @@ Cada fato financeiro é registrado uma vez, na tabela que é a sua origem. Telas
 | `investments`, `investment_movements`, `investment_valuations` | Carteira, movimentos e valores informados |
 | `goals`, `goal_contributions` | Metas |
 | `category_budgets` | Teto mensal por categoria de despesa (migração 0006); o gasto é calculado na hora |
+| (funções `setup_*`) | Migração 0007: contar contas, criar conta (no máximo 3, com trava na tabela) e redefinir senha encerrando as sessões. SECURITY DEFINER, executáveis só por `fin_app`, usadas pela página /configurar protegida por código |
 | `audit_log` | Histórico de edições e cancelamentos |
 
 ## Restrições importantes no banco
