@@ -1,0 +1,97 @@
+"""Configuração lida de variáveis de ambiente (prefixo ``FIN_``)."""
+
+from __future__ import annotations
+
+from functools import lru_cache
+from pathlib import Path
+from typing import Literal
+
+from pydantic import SecretStr, field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+def normalize_database_url(url: str) -> str:
+    """Aceita o endereço como os provedores entregam (postgres:// ou postgresql://) e
+    usa o driver psycopg 3, o único instalado."""
+    for prefix in ("postgresql+psycopg://", "postgresql://", "postgres://"):
+        if url.startswith(prefix):
+            return "postgresql+psycopg://" + url[len(prefix) :]
+    return url
+
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_prefix="FIN_", env_file=".env", extra="ignore")
+
+    environment: Literal["development", "test", "production"] = "development"
+    app_version: str = "0.1.0"
+
+    # URLs contêm senha: SecretStr evita que apareçam em logs e mensagens de erro.
+    # database_url: papel da aplicação (fin_app), sujeito a Row-Level Security.
+    # database_admin_url: usado só por migrações, backups e linha de comando.
+    database_url: SecretStr | None = None
+    database_admin_url: SecretStr | None = None
+
+    # Origens aceitas em requisições que alteram dados (proteção CSRF).
+    # Ex.: "https://financas.exemplo.com,http://localhost:3000"
+    allowed_origins: str = "http://localhost:3000,http://127.0.0.1:3000,http://localhost:8000"
+
+    # Pasta do site estático (frontend/out). Vazio: a API não serve o site.
+    static_dir: Path | None = None
+
+    # Sessões (decisão D10).
+    session_remember_max_seconds: int = 30 * 24 * 3600
+    session_remember_idle_seconds: int = 7 * 24 * 3600
+    session_short_max_seconds: int = 12 * 3600
+    session_short_idle_seconds: int = 30 * 60
+
+    # Limite de tentativas de login.
+    login_window_seconds: int = 15 * 60
+    login_max_failures_per_user: int = 5
+    login_max_failures_per_ip: int = 20
+
+    # Entrar com digital ou rosto (passkeys). Sem rp_id definido, usa o domínio da
+    # origem da requisição (já validada pela proteção CSRF). Precisa ser um nome de
+    # domínio ("localhost" vale; um IP como 127.0.0.1 não).
+    webauthn_rp_id: str | None = None
+    webauthn_rp_name: str = "Finanças"
+    webauthn_challenge_seconds: int = 5 * 60
+
+    # De onde vem o IP de quem acessa (usado no limite de tentativas de login):
+    # "primeiro" valor do X-Forwarded-For atrás do Caddy, que reescreve o cabeçalho;
+    # "ultimo" em plataformas cujo proxy só acrescenta o IP real no fim.
+    client_ip_from: Literal["primeiro", "ultimo"] = "primeiro"
+
+    # Código para criar e redefinir contas pelo navegador (/configurar), onde não há
+    # terminal. Sem ele, a configuração pelo navegador fica desligada.
+    setup_token: SecretStr | None = None
+
+    # Manter conexões abertas com o banco entre pedidos. Em banco que "dorme" quando
+    # ninguém usa (Neon grátis), conexão parada aberta poderia mantê-lo acordado e
+    # gastar a cota mensal; lá cada pedido abre e fecha a sua.
+    db_keep_connections: bool = True
+
+    @field_validator("database_url", "database_admin_url", mode="before")
+    @classmethod
+    def _normalize_url(cls, value: object) -> object:
+        if isinstance(value, SecretStr):
+            value = value.get_secret_value()
+        return normalize_database_url(value) if isinstance(value, str) and value else value
+
+    @property
+    def is_production(self) -> bool:
+        return self.environment == "production"
+
+    @property
+    def origins(self) -> frozenset[str]:
+        return frozenset(o.strip().rstrip("/") for o in self.allowed_origins.split(",") if o.strip())
+
+    @property
+    def cookie_secure(self) -> bool:
+        # Em produção o cookie só trafega por HTTPS. Em desenvolvimento local (http)
+        # o navegador recusaria um cookie Secure.
+        return self.is_production
+
+
+@lru_cache
+def get_settings() -> Settings:
+    return Settings()

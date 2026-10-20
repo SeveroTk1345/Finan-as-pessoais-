@@ -1,0 +1,61 @@
+[project]
+name = "financas-backend"
+version = "0.1.0"
+description = "API e motor financeiro do app de finanças pessoais"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "pydantic>=2.8",
+    "pydantic-settings>=2.4",
+    # Base de fusos horários embarcada: imagens slim e Windows não têm a do sistema.
+    "tzdata>=2024.1",
+    "sqlalchemy>=2.0.30",
+    "psycopg[binary]>=3.2",
+    "alembic>=1.13",
+    "argon2-cffi>=23.1",
+    "webauthn==3.0.1",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "hypothesis>=6.100",
+    "httpx2>=2.13",
+    "ruff>=0.6",
+    "mypy>=1.11",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = ["db: precisa de PostgreSQL (FIN_TEST_ADMIN_URL)"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "N", "S", "SIM", "RUF", "DTZ"]
+# O formatador cuida do tamanho das linhas; sobram só textos longos em mensagens e SQL.
+ignore = ["E501"]
+
+[tool.ruff.lint.flake8-bugbear]
+# Padrão do FastAPI: dependências declaradas nos parâmetros.
+extend-immutable-calls = ["fastapi.Depends", "fastapi.Header", "fastapi.Query"]
+
+[tool.ruff.lint.per-file-ignores]
+# Testes montam SQL a partir de constantes do próprio teste e usam linhas longas de SQL.
+"tests/**" = ["S101", "S608", "E501"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+packages = ["app", "tests"]

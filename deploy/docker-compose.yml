@@ -1,0 +1,103 @@
+# Aplicação completa: banco, migrações, API + site, HTTPS (Caddy) e backup automático.
+#
+#   cd deploy && cp ../.env.example .env   # e troque TODAS as senhas e o domínio
+#   docker compose up -d --build
+#
+# Só o Caddy publica portas (80 e 443). Banco e API ficam na rede interna.
+
+name: financas
+
+services:
+  db:
+    image: postgres:16.10-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: fin_admin
+      POSTGRES_PASSWORD: ${FIN_DB_ADMIN_PASSWORD:?defina FIN_DB_ADMIN_PASSWORD no .env}
+      POSTGRES_DB: financas
+      FIN_DB_APP_PASSWORD: ${FIN_DB_APP_PASSWORD:?defina FIN_DB_APP_PASSWORD no .env}
+      TZ: UTC
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fin_admin -d financas -h 127.0.0.1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [interno]
+
+  # Aplica as migrações e termina. A API nunca recebe a senha de administrador.
+  migrate:
+    build: ..
+    image: financas:latest
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      FIN_DATABASE_ADMIN_URL: postgresql+psycopg://fin_admin:${FIN_DB_ADMIN_PASSWORD}@db:5432/financas
+    command: ["alembic", "upgrade", "head"]
+    networks: [interno]
+
+  app:
+    image: financas:latest
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      FIN_ENVIRONMENT: production
+      FIN_DATABASE_URL: postgresql+psycopg://fin_app:${FIN_DB_APP_PASSWORD}@db:5432/financas
+      FIN_ALLOWED_ORIGINS: https://${FIN_DOMAIN:?defina FIN_DOMAIN no .env}
+    networks: [interno]
+
+  caddy:
+    image: caddy:2.10.2-alpine
+    restart: unless-stopped
+    depends_on: [app]
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      FIN_DOMAIN: ${FIN_DOMAIN:?defina FIN_DOMAIN no .env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    networks: [interno]
+
+  backup:
+    image: postgres:16.10-alpine
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGHOST: db
+      PGUSER: fin_admin
+      PGPASSWORD: ${FIN_DB_ADMIN_PASSWORD}
+      PGDATABASE: financas
+      FIN_BACKUP_DIR: /backups
+      FIN_BACKUP_KEEP: ${FIN_BACKUP_KEEP:-14}
+      FIN_BACKUP_INTERVAL_SECONDS: ${FIN_BACKUP_INTERVAL_SECONDS:-86400}
+    volumes:
+      - ../scripts:/scripts:ro
+      - ${FIN_BACKUP_HOST_DIR:-./backups}:/backups
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        while true; do
+          /scripts/backup.sh || echo "ERRO: backup falhou em $$(date -u)" >&2
+          sleep "$$FIN_BACKUP_INTERVAL_SECONDS"
+        done
+    networks: [interno]
+
+volumes:
+  db-data:
+  caddy-data:
+  caddy-config:
+
+networks:
+  interno:
